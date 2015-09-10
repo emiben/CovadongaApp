@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ListaClienteActivity"
+            android:name=".ListaProveedorActivity"
             android:label="@string/title_activity_lista_cliente"
             android:windowSoftInputMode="stateHidden|adjustPan" >
         </activity>

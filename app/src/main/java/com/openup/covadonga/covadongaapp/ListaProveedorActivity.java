@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 
 
-public class ListaClienteActivity extends ActionBarActivity {
+public class ListaProveedorActivity extends ActionBarActivity {
 
     private EditText    etFilter;
     private ListView    lvClientes;
@@ -30,7 +30,7 @@ public class ListaClienteActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lista_cliente);
+        setContentView(R.layout.activity_lista_proveedor);
 
         getViewElements();
         loadClients();
@@ -40,7 +40,7 @@ public class ListaClienteActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_lista_cliente, menu);
+        getMenuInflater().inflate(R.menu.menu_lista_proveedor, menu);
         return true;
     }
 
@@ -88,7 +88,7 @@ public class ListaClienteActivity extends ActionBarActivity {
             @Override
             public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
                 // When user changed the Text
-                ListaClienteActivity.this.adaptador.getFilter().filter(cs);
+                ListaProveedorActivity.this.adaptador.getFilter().filter(cs);
             }
 
             @Override

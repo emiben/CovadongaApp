@@ -58,7 +58,7 @@ public class MenuActivity extends ActionBarActivity {
     }
 
     private void startListaClienteActivity() {
-        Intent i = new Intent(this, ListaClienteActivity.class);
+        Intent i = new Intent(this, ListaProveedorActivity.class);
         startActivity(i);
     }
 }
