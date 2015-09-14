@@ -1,10 +1,12 @@
 package com.openup.covadonga.covadongaapp;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,13 +16,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.openup.covadonga.covadongaapp.util.DBHelper;
 
 
 public class ListaProveedorActivity extends ActionBarActivity {
 
     private EditText    etFilter;
-    private ListView    lvClientes;
+    private ListView    lvProv;
     private Button      btnBack;
     private Button      btnOK;
     private TextView    tvEmpresa;
@@ -61,21 +65,40 @@ public class ListaProveedorActivity extends ActionBarActivity {
 
     public void getViewElements(){
         etFilter = (EditText) findViewById(R.id.editTextFilter);
-        lvClientes = (ListView) findViewById(R.id.listViewClientes);
+        lvProv = (ListView) findViewById(R.id.listViewClientes);
         btnBack = (Button) findViewById(R.id.btnBack);
         btnOK = (Button) findViewById(R.id.btnOK);
         tvEmpresa = (TextView) findViewById(R.id.textViewEmp);
     }
 
     public void loadClients(){
-        String[] distri = {"Schneck", "CONAPROLE", "La Sibarita", "Coca Cola", "Pepsi", "Pilsen", "Patricia",
-                            "Garoto", "Milka"};
-        adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, distri);
-        lvClientes.setAdapter(adaptador);
+        DBHelper db = null;
+        String qry = "Select name from c_bpartner";
+
+        try {
+            db = new DBHelper(getApplicationContext());
+            db.openDB(0);
+            Cursor rs = db.querySQL(qry, null);
+            int tam = rs.getCount();
+            String[] prov = new String[tam];
+            rs.moveToFirst();
+            for(int i = 0; i < tam; i++){
+                prov[i] = rs.getString(0);
+                rs.moveToNext();
+            }
+            adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, prov);
+            lvProv.setAdapter(adaptador);
+
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+
     }
 
     public void setActions(){
-        lvClientes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        lvProv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
                 // TODO Auto-generated method stub
@@ -107,7 +130,12 @@ public class ListaProveedorActivity extends ActionBarActivity {
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startListaOrdenesActivity();
+                if(tvEmpresa.getText().toString() != ""){
+                    startListaOrdenesActivity();
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), "Por favor elija un proveedor!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -122,6 +150,11 @@ public class ListaProveedorActivity extends ActionBarActivity {
 
     private void startListaOrdenesActivity() {
         Intent i = new Intent(this, ListaOrdenesActivity.class);
+        Bundle b = new Bundle();
+        b.putString("Prov", tvEmpresa.getText().toString());
+
+        i.putExtras(b);
+        this.finish();
         startActivity(i);
     }
 }

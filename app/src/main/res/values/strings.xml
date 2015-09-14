@@ -40,12 +40,15 @@
     <string name="txtSave">Guardar</string>
     <string name="txtEnd">Finalizar</string>
     <string name="txtScan">Escanear</string>
+    <string name="txtFac">Fact.</string>
+    <string name="txtRec">Rec.</string>
 
     <!-- Dialog Cantidades recibidas-->
     <string name="txtInvoiced">Facturado</string>
     <string name="txtReceived">Recibido</string>
     <string name="txtQuantities">Cantidades</string>
     <string name="txtOK">OK</string>
+
 
     <!-- register Activity-->
     <string name="txtName">Nombre</string>

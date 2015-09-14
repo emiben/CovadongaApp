@@ -40,11 +40,47 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/editTextFragBucar"
                     android:layout_marginLeft="3dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/txtProducts"
+                    android:textStyle="bold"
+                    android:id="@+id/textProdu"
+                    android:width="210dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/txtFac"
+                    android:textStyle="bold"
+                    android:id="@+id/textFactu"
+                    android:width="60dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/txtRec"
+                    android:textStyle="bold"
+                    android:id="@+id/textReci"
+                    android:width="60dp" />
             </LinearLayout>
 
             <ListView
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="275dp"
                 android:id="@+id/listViewFragment"
                 android:layout_marginTop="10dp"
                 android:layout_weight="5" />

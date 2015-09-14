@@ -1,6 +1,7 @@
 package com.openup.covadonga.covadongaapp;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,6 +17,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.openup.covadonga.covadongaapp.util.DBHelper;
+
 
 public class ListaOrdenesActivity extends ActionBarActivity {
 
@@ -23,6 +26,9 @@ public class ListaOrdenesActivity extends ActionBarActivity {
     private ListView    lvOrders;
     private Button      btnBack;
     private Button      btnOK;
+    private String[]    prov;
+    private String[]    orders;
+    private int         tam;
     // Listview Adapter
     private ArrayAdapter<String> adaptador;
 
@@ -32,7 +38,8 @@ public class ListaOrdenesActivity extends ActionBarActivity {
         setContentView(R.layout.activity_lista_ordenes);
 
         getViewElements();
-        loadClients();
+        getPrveedor();
+        loadOrders();
         setActions();
     }
 
@@ -65,12 +72,44 @@ public class ListaOrdenesActivity extends ActionBarActivity {
         btnOK = (Button) findViewById(R.id.btnOkOrd);
     }
 
-    public void loadClients(){
-        String[] distri = {"Orden 1", "Orden 2", "Orden 3", "Orden 4", "Orden 5", "Orden 6", "Orden 7",
-                "Orden 8", "Orden 9"};
-        adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, distri);
-        lvOrders.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        lvOrders.setAdapter(adaptador);
+    public void loadOrders(){
+        DBHelper db = null;
+        String qry1 = "select c_bpartner_id from c_bpartner where name = '" + prov[0] + "'";
+        String qry2 = "";
+        int provId, count;
+        //String qry = "Select name from c_bpartner where name = '"+ prov[0] + "'";
+
+        try {
+            db = new DBHelper(getApplicationContext());
+            db.openDB(0);
+            Cursor rs = db.querySQL(qry1, null);
+            rs.moveToFirst();
+            provId = rs.getInt(0);
+            qry2 = "select documentno from c_order where c_bpartner_id = " + provId;
+            Cursor rs2 = db.querySQL(qry2, null);
+            count = rs2.getCount();
+            orders = new String[count];
+            rs2.moveToFirst();
+            for(int i = 0; i < count; i++){
+                orders[i] = rs2.getString(0);
+                rs2.moveToNext();
+            }
+
+            adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, orders);
+            lvOrders.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+            lvOrders.setAdapter(adaptador);
+
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+
+//        String[] distri = {"Orden 1", "Orden 2", "Orden 3", "Orden 4", "Orden 5", "Orden 6", "Orden 7",
+//                "Orden 8", "Orden 9"};
+//        adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, distri);
+//        lvOrders.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+//        lvOrders.setAdapter(adaptador);
     }
 
     public void setActions(){
@@ -125,5 +164,16 @@ public class ListaOrdenesActivity extends ActionBarActivity {
         i.putExtras(b);
         this.finish();
         startActivity(i);
+    }
+
+    public void getPrveedor() {
+        // get the Intent that started this Activity
+        Intent in = getIntent();
+        // get the Bundle that stores the data of this Activity
+        Bundle b = in.getExtras();
+        if (null != b) {
+            prov = b.getString("Prov").split(";");
+            tam = prov.length;
+        }
     }
 }

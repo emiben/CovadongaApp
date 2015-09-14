@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -15,6 +16,7 @@ import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,6 +28,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.openup.covadonga.covadongaapp.util.CustomApplication;
+import com.openup.covadonga.covadongaapp.util.DBHelper;
+import com.openup.covadonga.covadongaapp.util.CustomListAdapter;
 import com.openup.covadonga.covadongaapp.util.Order;
 
 
@@ -147,7 +152,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            PlaceholderFragment ph = new PlaceholderFragment();
+            return ph.newInstance(position + 1, ordenes[position]);
         }
 
         @Override
@@ -175,17 +181,21 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
 
         private ListView    lvProducts;
         private ArrayAdapter<String> adaptador;
+        private CustomListAdapter adapter;
         private EditText    etFilter;
         private Button      scan;
+        private static int         docID;
+        private int         ordId;
 
         /**
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
+        public PlaceholderFragment newInstance(int sectionNumber, String docuID) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            args.putInt("docID", Integer.parseInt(docuID));
             fragment.setArguments(args);
             return fragment;
         }
@@ -193,14 +203,24 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         public PlaceholderFragment() {
         }
 
+        public int getShownDoc() {
+            return getArguments().getInt("docID", 0);
+        }
+
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_procesar_orden, container, false);
-            //loadProducts(Integer.toString(tam));
+//            Intent in = getShownIndex();
+//            Bundle b = in.getExtras();
+//            if (null != b) {
+                docID = getShownDoc();
+//            }
             lvProducts = (ListView) rootView.findViewById(R.id.listViewFragment);
             etFilter = (EditText) rootView.findViewById(R.id.editTextFragBucar);
             scan = (Button) rootView.findViewById(R.id.btnScan);
+
             setActions();
             loadProducts();
 
@@ -208,44 +228,53 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         }
 
 
+
         public void loadProducts(){
 //            String[] distri = {"Prod a", "Prod b", "Prod c", "Prod d", "Prod 1", "Prod 2", "Prod 3", "Prod 4", "Prod 5"};
 //            adaptador = new ArrayAdapter<String>(getActivity().getBaseContext(), android.R.layout.simple_list_item_1, distri);
 //            lvProducts.setAdapter(adaptador);
             ArrayList<Order> orderResults = GetSearchResults();
-            lvProducts.setAdapter(new OrderListAdapter(getActivity().getBaseContext(), orderResults));
+            adapter = new CustomListAdapter(getActivity().getBaseContext(), orderResults);
+            //lvProducts.setAdapter(new OrderListAdapter(getActivity().getBaseContext(), orderResults));
+            lvProducts.setAdapter(adapter);
         }
 
         private ArrayList<Order> GetSearchResults(){
+            DBHelper db = null;
             ArrayList<Order> results = new ArrayList<Order>();
+            Cursor rs = null;
+            String qry = "select p.name, ol.qtyordered, 0, ol.qtydelivered" +
+                           " from c_orderline ol JOIN m_product p" +
+                           " ON ol.m_product_id = p.m_product_id" +
+                           " where ol.c_order_id = ";
 
-            Order sr1 = new Order();
-            sr1.setCodigoDesc("Prod 1");
-            sr1.setCantOrdenada(10);
-            sr1.setCantFactura(10);
-            sr1.setCantRecibida(10);
-            results.add(sr1);
+            try {
+                db = new DBHelper(CustomApplication.getCustomAppContext());
+                db.openDB(0);
+                String qryAux = "select c_order_id from c_order where documentno = " + docID + "";
+                Cursor rsAux = db.querySQL(qryAux, null);
+                rsAux.moveToFirst();
+                ordId = rsAux.getInt(0);
+                qry = qry + ordId;
 
-            sr1 = new Order();
-            sr1.setCodigoDesc("Prod 2");
-            sr1.setCantOrdenada(9);
-            sr1.setCantFactura(9);
-            sr1.setCantRecibida(9);
-            results.add(sr1);
+                rs = db.querySQL(qry, null);
 
-            sr1 = new Order();
-            sr1.setCodigoDesc("Prod 3");
-            sr1.setCantOrdenada(5);
-            sr1.setCantFactura(5);
-            sr1.setCantRecibida(5);
-            results.add(sr1);
+                if(rs.moveToFirst()){
+                    do{
+                        Order sr1 = new Order();
+                        sr1.setCodigoDesc(rs.getString(0));
+                        sr1.setCantOrdenada(rs.getFloat(1));
+                        sr1.setCantFactura(rs.getFloat(2));
+                        sr1.setCantRecibida(rs.getFloat(3));
+                        results.add(sr1);
+                    }while(rs.moveToNext());
+                }
 
-            sr1 = new Order();
-            sr1.setCodigoDesc("Prod 4");
-            sr1.setCantOrdenada(15);
-            sr1.setCantFactura(15);
-            sr1.setCantRecibida(15);
-            results.add(sr1);
+            }catch (Exception e) {
+                e.getMessage();
+            } finally {
+                db.close();
+            }
 
             return results;
         }
@@ -256,7 +285,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                 @Override
                 public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
                     // When user changed the Text
-                    PlaceholderFragment.this.adaptador.getFilter().filter(cs);
+                    //PlaceholderFragment.this.adaptador.getFilter().filter(cs);
+                    PlaceholderFragment.this.adapter.getFilter().filter(cs);
                 }
 
                 @Override
@@ -275,13 +305,43 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             scan.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startConfirmarCantidadesActivity();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(CustomApplication.getCustomAppContext());
+                    builder.setTitle("Title");
+
+                    // Set up the input
+                    final EditText input = new EditText(CustomApplication.getCustomAppContext());
+                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                    input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    builder.setView(input);
+
+                    // Set up the buttons
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            int barcode;
+                            barcode = Integer.parseInt(input.getText().toString());
+                            startConfirmarCantidadesActivity(barcode);
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.show();
+                    //
                 }
             });
         }
 
-        public void startConfirmarCantidadesActivity(){
+        public void startConfirmarCantidadesActivity(int barCode){
             Intent i = new Intent(getActivity().getBaseContext(), ConfirmarCantidadesActivity.class);
+            Bundle b = new Bundle();
+            b.putInt("c_order_id", docID);
+            b.putInt("barcaode", barCode);
+            i.putExtras(b);
             startActivity(i);
         }
     }
