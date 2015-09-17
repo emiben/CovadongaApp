@@ -116,8 +116,8 @@ public class DBHelper extends SQLiteOpenHelper {
      * @return void
      * @author OpenUp
      */
-    public void updateSQL(String table, ContentValues values, String where, String[] argmWhere) {
-        db.update(table, values, where, argmWhere);
+    public int updateSQL(String table, ContentValues values, String where, String[] argmWhere) {
+        return db.update(table, values, where, argmWhere);
     }
 
     /**

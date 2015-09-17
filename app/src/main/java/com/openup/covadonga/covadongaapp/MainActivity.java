@@ -92,7 +92,7 @@ public class MainActivity extends ActionBarActivity {
                 //if(u.equals("admin") && p.equals("admin")){
                 if(isOnline()){
                     if(loginWS(userIn,pswIn)){
-                        //startPrincipalActivity(0);
+//                        startMenuActivity();
                     }else{
 
                     }
@@ -100,8 +100,8 @@ public class MainActivity extends ActionBarActivity {
 
                     CharSequence text =  getResources().getString(R.string.noInternet);
                     Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
-                    toast.show();                }
-
+                    toast.show();
+                }
             }
         });
     }

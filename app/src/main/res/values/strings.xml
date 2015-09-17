@@ -16,9 +16,21 @@
     <!-- Menu-->
     <string name="txtMenu">Menu</string>
     <string name="txtProcessPO">Procesar Orden de Compra</string>
+    <string name="txtSync">Sincronizar</string>
 
     <!-- Lista Orden-->
     <string name="txtChoseOrder">Elija las Ordenes</string>
+
+    <!-- AsociarBarCode-->
+    <string name="txtAsociarBarCode">Asociar Codigo de Barras</string>
+
+    <!-- Ingreso Facturas-->
+    <string name="txtInsertarFact">Ingrese las Facturas</string>
+    <string name="txtFactNo">Nro. De Factura:</string>
+    <string name="txtDate">Fecha:</string>
+    <string name="txtInsert">Guardar Factura</string>
+    <string name="txtOrder">Orden:</string>
+
 
     <!-- Lista Cliente-->
     <string name="txtChoseSupplier">Elija un Proveedor</string>
@@ -72,6 +84,8 @@
     <string name="new_supplier">Nuevo Proveedor</string>
 
     <string name="noInternet">No hay acceso a internet !!</string>
+    <string name="title_activity_ingreso_facturas">IngresoFacturasActivity</string>
+    <string name="title_activity_asociar_bar_code">AsociarBarCodeActivity</string>
 
 
 </resources>

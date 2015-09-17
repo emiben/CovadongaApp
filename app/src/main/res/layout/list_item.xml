@@ -14,10 +14,9 @@
         android:width="200dp"
         android:layout_marginLeft="10dp" />
 
-    <EditText
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
         android:ems="10"
         android:textSize="15dp"
         android:textAlignment="gravity"
@@ -26,10 +25,9 @@
         android:layout_gravity="left|right"
         android:gravity="right" />
 
-    <EditText
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
         android:ems="10"
         android:textSize="15dp"
         android:textAlignment="gravity"

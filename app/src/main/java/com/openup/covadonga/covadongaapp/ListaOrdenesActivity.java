@@ -105,11 +105,6 @@ public class ListaOrdenesActivity extends ActionBarActivity {
             db.close();
         }
 
-//        String[] distri = {"Orden 1", "Orden 2", "Orden 3", "Orden 4", "Orden 5", "Orden 6", "Orden 7",
-//                "Orden 8", "Orden 9"};
-//        adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, distri);
-//        lvOrders.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-//        lvOrders.setAdapter(adaptador);
     }
 
     public void setActions(){
@@ -138,13 +133,13 @@ public class ListaOrdenesActivity extends ActionBarActivity {
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startProcessOrderActivity();
+                startIngresoFacturasActivity();
             }
         });
     }
 
-    private void startProcessOrderActivity() {
-        Intent i = new Intent(this, ProcesarOrdenActivity.class);
+    private void startIngresoFacturasActivity() {
+        Intent i = new Intent(this, IngresoFacturasActivity.class);
         Bundle b = new Bundle();
         SparseBooleanArray checkedItems = lvOrders.getCheckedItemPositions();
 

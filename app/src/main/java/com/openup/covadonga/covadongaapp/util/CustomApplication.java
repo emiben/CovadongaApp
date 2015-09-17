@@ -10,7 +10,7 @@ public class CustomApplication extends Application {
     private static Context context;
 
     public void onCreate(){
-        context=this;// getApplicationContext();
+        context=getApplicationContext();
     }
 
     public static Context getCustomAppContext(){

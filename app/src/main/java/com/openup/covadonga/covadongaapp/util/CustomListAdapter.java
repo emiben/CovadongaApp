@@ -36,14 +36,14 @@ public class CustomListAdapter extends ArrayAdapter<Order> {
         }
         // Lookup view for data population
         TextView prod = (TextView) convertView.findViewById(R.id.prodDesc);
-        EditText cantFact = (EditText) convertView.findViewById(R.id.cantFact);
-        EditText cantEntregado = (EditText) convertView.findViewById(R.id.cantRec);
+        TextView cantFact = (TextView) convertView.findViewById(R.id.cantFact);
+        TextView cantEntregado = (TextView) convertView.findViewById(R.id.cantRec);
         // Populate the data into the template view using the data object
         prod.setText(order.getCodigoDesc());
         double Fact = order.getCantFactura();
 
         cantFact.setText(Double.toString(Fact));
-        double Entregado = order.getCantFactura();
+        double Entregado = order.getCantRecibida();
         cantEntregado.setText(Double.toString(Entregado));
         // Return the completed view to render on screen
         return convertView;

@@ -1,5 +1,8 @@
 package com.openup.covadonga.covadongaapp;
 
+import android.content.ContentValues;
+import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,12 +12,23 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.openup.covadonga.covadongaapp.util.CustomApplication;
+import com.openup.covadonga.covadongaapp.util.DBHelper;
+import com.openup.covadonga.covadongaapp.util.Order;
+
+import java.util.ArrayList;
 
 
 public class ConfirmarCantidadesActivity extends ActionBarActivity {
 
     private EditText    facturado;
     private EditText    recibido;
+    private TextView    producto;
+    private int         ordId;
+    private long        barCode;
     private Spinner     facturas;
     private Button      cancell;
     private Button      ok;
@@ -25,7 +39,10 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         setContentView(R.layout.activity_confirmar_cantidades);
 
         getViewElements();
-        loadInvoices();
+        getBundleData();
+        getProd();
+        loadInvoices();//ver si lo cargamos o lo ingresan
+        setActions();
     }
 
     @Override
@@ -53,20 +70,144 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
     public void getViewElements(){
         facturado = (EditText) findViewById(R.id.etInvoiced);
         recibido = (EditText) findViewById(R.id.etReceived);
+        producto =  (TextView) findViewById(R.id.tvProduct);
         facturas = (Spinner) findViewById(R.id.spinInvoices);
         cancell = (Button) findViewById(R.id.btnCancel);
         ok = (Button) findViewById(R.id.btnOK);
     }
 
     public void setActions(){
-
+        ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                insertCant();
+            }
+        });
     }
 
     public void loadInvoices(){
-        String spinnerArray[] = {"EJ16516","ZX19681","HU619819","JM54615","YU61891"};
+        String fact = getfacturas();
+        String spinnerArray[] = fact.split(";");
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray); //selected item will look like a spinner set from XML
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         facturas.setAdapter(spinnerArrayAdapter);
     }
+
+    public String getfacturas(){
+        DBHelper db = null;
+        String qry = "select factura_id from factura where c_order_id = " + ordId;
+        String res = "";
+
+        try {
+            Cursor rs = null;
+            db = new DBHelper(this);
+            db.openDB(0);
+            rs = db.querySQL(qry, null);
+
+            if(rs.moveToFirst()) {
+                do{
+                    res = res + rs.getString(0) + ";";
+                }while(rs.moveToNext());
+            }
+
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+        return res;
+    }
+
+    public void getBundleData() {
+        // get the Intent that started this Activity
+        Intent in = getIntent();
+        // get the Bundle that stores the data of this Activity
+        Bundle b = in.getExtras();
+        if (null != b) {
+            ordId = b.getInt("c_order_id");
+            barCode = b.getLong("barcode");
+        }
+    }
+
+
+
+    private void getProd(){
+        DBHelper db = null;
+        Cursor rs = null;
+        String qry = "select p.name" +
+                        " from c_orderline ol JOIN m_product p" +
+                        " ON ol.m_product_id = p.m_product_id" +
+                        " JOIN uy_productupc up" +
+                        " ON ol.m_product_id = up.m_product_id" +
+                        " where ol.c_order_id = " + ordId +
+                        " and up.upc = " + barCode;
+
+        try {
+            db = new DBHelper(CustomApplication.getCustomAppContext());
+            db.openDB(0);
+            rs = db.querySQL(qry, null);
+
+            if(rs.moveToFirst()) {
+                producto.setText(rs.getString(0));
+            }else{         ///Agergar else para asociar el codigo de barra
+                startAsociarBarCodeActivity(barCode);
+            }
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+    }
+
+    private void insertCant(){
+        if(facturado.getText().toString().equals("") || recibido.getText().toString().equals("")){
+            Toast.makeText(getApplicationContext(), "Por favor ingrese cantidad Facturada y Recibida!",
+                    Toast.LENGTH_SHORT).show();
+        }else{
+            DBHelper db = null;
+            int res;
+
+            String where = " c_order_id = " + ordId +
+                            " and m_product_id = (select m_product_id from uy_productupc where upc ="+ barCode + ")";
+
+            try {
+                db = new DBHelper(CustomApplication.getCustomAppContext());
+                db.openDB(1);
+                ContentValues cv = new ContentValues();
+                cv.put("qtyinvoiced", facturado.getText().toString());
+                cv.put("qtydelivered", recibido.getText().toString());
+                cv.put("factura_id", facturas.getSelectedItem().toString());
+
+                res = db.updateSQL("c_orderline", cv, where, null);
+
+                //rs = db.querySQL(qry, null);
+                if(res > 0){
+                    Toast.makeText(getApplicationContext(), "Actualizado!",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                }else{
+                    Toast.makeText(getApplicationContext(), "Error al actulizar!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            }catch (Exception e) {
+                e.getMessage();
+            } finally {
+                db.close();
+            }
+        }
+    }
+
+    public void startAsociarBarCodeActivity(long barCode){
+        Intent i = new Intent(this, AsociarBarCodeActivity.class);
+        Bundle b = new Bundle();
+        b.putInt("c_order_id", ordId);
+        b.putLong("barcode", barCode);
+        i.putExtras(b);
+        finish();
+        startActivity(i);
+    }
+
+
 
 }

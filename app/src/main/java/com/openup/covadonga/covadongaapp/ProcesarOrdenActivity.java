@@ -3,6 +3,7 @@ package com.openup.covadonga.covadongaapp;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -27,6 +28,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.openup.covadonga.covadongaapp.util.CustomApplication;
 import com.openup.covadonga.covadongaapp.util.DBHelper;
@@ -184,7 +186,9 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         private CustomListAdapter adapter;
         private EditText    etFilter;
         private Button      scan;
-        private static int         docID;
+        private Button      guardar;
+        private Button      finalizar;
+        private int         docID;
         private int         ordId;
 
         /**
@@ -220,6 +224,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             lvProducts = (ListView) rootView.findViewById(R.id.listViewFragment);
             etFilter = (EditText) rootView.findViewById(R.id.editTextFragBucar);
             scan = (Button) rootView.findViewById(R.id.btnScan);
+            guardar = (Button) rootView.findViewById(R.id.btnSave);
+            finalizar = (Button) rootView.findViewById(R.id.btnEnd);
 
             setActions();
             loadProducts();
@@ -227,15 +233,18 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             return rootView;
         }
 
+        @Override
+        public void onResume()
+        {
+            super.onResume();
+            loadProducts();
+        }
+
 
 
         public void loadProducts(){
-//            String[] distri = {"Prod a", "Prod b", "Prod c", "Prod d", "Prod 1", "Prod 2", "Prod 3", "Prod 4", "Prod 5"};
-//            adaptador = new ArrayAdapter<String>(getActivity().getBaseContext(), android.R.layout.simple_list_item_1, distri);
-//            lvProducts.setAdapter(adaptador);
             ArrayList<Order> orderResults = GetSearchResults();
             adapter = new CustomListAdapter(getActivity().getBaseContext(), orderResults);
-            //lvProducts.setAdapter(new OrderListAdapter(getActivity().getBaseContext(), orderResults));
             lvProducts.setAdapter(adapter);
         }
 
@@ -243,7 +252,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             DBHelper db = null;
             ArrayList<Order> results = new ArrayList<Order>();
             Cursor rs = null;
-            String qry = "select p.name, ol.qtyordered, 0, ol.qtydelivered" +
+            String qry = "select p.name, ol.qtyordered, ol.qtyinvoiced, ol.qtydelivered" +
                            " from c_orderline ol JOIN m_product p" +
                            " ON ol.m_product_id = p.m_product_id" +
                            " where ol.c_order_id = ";
@@ -305,44 +314,80 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             scan.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(CustomApplication.getCustomAppContext());
-                    builder.setTitle("Title");
+                    //startConfirmarCantidadesActivity(7891010775629L);
+                    startConfirmarCantidadesActivity(0000000000000L);
+                }
+            });
 
-                    // Set up the input
-                    final EditText input = new EditText(CustomApplication.getCustomAppContext());
-                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                    input.setInputType(InputType.TYPE_CLASS_NUMBER);
-                    builder.setView(input);
+            guardar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getActivity().finish();
+                }
+            });
 
-                    // Set up the buttons
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            int barcode;
-                            barcode = Integer.parseInt(input.getText().toString());
-                            startConfirmarCantidadesActivity(barcode);
+            finalizar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Finalizar Orden?");
+                    // Add the buttons
+                    builder.setPositiveButton(R.string.txtOK, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            finalizeOrder();
                         }
                     });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
+                    builder.setNegativeButton(R.string.txtCancell, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
                         }
                     });
-
-                    builder.show();
-                    //
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
                 }
             });
         }
 
-        public void startConfirmarCantidadesActivity(int barCode){
+
+
+        public void startConfirmarCantidadesActivity(long barCode){
             Intent i = new Intent(getActivity().getBaseContext(), ConfirmarCantidadesActivity.class);
             Bundle b = new Bundle();
-            b.putInt("c_order_id", docID);
-            b.putInt("barcaode", barCode);
+            b.putInt("c_order_id", ordId);
+            b.putLong("barcode", barCode);
             i.putExtras(b);
             startActivity(i);
+        }
+
+        public void finalizeOrder(){
+            DBHelper db = null;
+            int res;
+
+            String where = " c_order_id = " + ordId;
+
+            try {
+                db = new DBHelper(CustomApplication.getCustomAppContext());
+                db.openDB(1);
+                ContentValues cv = new ContentValues();
+                cv.put("finalizado", "Y");
+
+                res = db.updateSQL("c_order", cv, where, null);
+
+                //rs = db.querySQL(qry, null);
+                if(res > 0){
+                    Toast.makeText(getActivity().getBaseContext(), "Orden Finalizada!",
+                            Toast.LENGTH_SHORT).show();
+                    getActivity().finish();
+                }else{
+                    Toast.makeText(getActivity().getBaseContext(), "Error al finalizar orden!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            }catch (Exception e) {
+                e.getMessage();
+            } finally {
+                db.close();
+            }
         }
     }
 
@@ -353,22 +398,22 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         Intent in = getIntent();
         // get the Bundle that stores the data of this Activity
         Bundle b = in.getExtras();
-        if (null != b) {
-            ordenes = b.getString("Ordenes").split(";");
-            tam = ordenes.length;
-        }
+            if (null != b) {
+                ordenes = b.getString("Ordenes").split(";");
+                tam = ordenes.length;
+            }
     }
 
-    public void newOrderProcess(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.new_supplier);
-                builder.setMessage(R.string.process_new_order)
+        public void newOrderProcess() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.new_supplier);
+            builder.setMessage(R.string.process_new_order)
                 .setPositiveButton(R.string.txtOK, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         startListaClienteActivity();
                     }
                 })
-                .setNegativeButton(R.string.txtCancell, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.txtCancell, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User cancelled the dialog
                     }
