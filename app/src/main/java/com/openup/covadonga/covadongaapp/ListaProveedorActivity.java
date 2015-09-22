@@ -1,5 +1,6 @@
 package com.openup.covadonga.covadongaapp;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
@@ -19,6 +20,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openup.covadonga.covadongaapp.util.DBHelper;
+import com.openup.covadonga.covadongaapp.util.WebServices;
+
+import org.ksoap2.serialization.SoapObject;
+
+import java.sql.ResultSet;
 
 
 public class ListaProveedorActivity extends ActionBarActivity {
@@ -28,6 +34,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
     private Button      btnBack;
     private Button      btnOK;
     private TextView    tvEmpresa;
+    private ProgressDialog  pDialog;
     // Listview Adapter
     private ArrayAdapter<String> adaptador;
 
@@ -130,10 +137,10 @@ public class ListaProveedorActivity extends ActionBarActivity {
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(tvEmpresa.getText().toString() != ""){
-                    startListaOrdenesActivity();
-                }
-                else{
+                if (tvEmpresa.getText().toString() != "") {
+                    //startListaOrdenesActivity();
+                    getProvOrdersWS();
+                } else {
                     Toast.makeText(getApplicationContext(), "Por favor elija un proveedor!", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -156,5 +163,269 @@ public class ListaProveedorActivity extends ActionBarActivity {
         i.putExtras(b);
         this.finish();
         startActivity(i);
+    }
+
+
+    public void getProvOrdersWS() {
+        pDialog = ProgressDialog.show(this, null, "Consultando datos...", true);
+        new Thread() {
+            public void run() {
+                try {
+                    getProvOrders(getProvId());
+                    insertProds();
+                    startListaOrdenesActivity();
+                } catch (Exception e) {
+                    e.getMessage();
+                }
+                pDialog.dismiss();
+            }
+        }.start();
+    }
+
+
+    private void getProvOrders(int partnerID){
+
+        WebServices ws = new WebServices();
+        String[] columYVal = new String[4];
+        SoapObject resultado_xml = null;
+        int i = 0;
+        columYVal[i++] = "DocStatus"; //colum
+        columYVal[i++] = "CO"; //val           ///////////Cambiar a CO
+
+        columYVal[i++] = "C_BPartner_ID"; //colum
+        columYVal[i++] = String.valueOf(partnerID); //val
+
+        resultado_xml = ws.webServiceQry("LoadProvOrders", "C_Order", columYVal);
+        insertOrders(resultado_xml);
+        insertOrderLines(partnerID);
+
+    }
+
+    private void insertOrders(SoapObject so){
+        SoapObject dataResult = (SoapObject)so.getProperty(0);
+        int tam = dataResult.getPropertyCount();
+        String delims = "[=;]";
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+
+        try{
+            if(tam > 0) {
+                for (int i = 0; i < tam; i++) {
+                    SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
+                    String col1[] = dataRow.getProperty(0).toString().split(delims); //C_BPartner_ID--
+                    String col2[] = dataRow.getProperty(1).toString().split(delims); //C_Order_ID--
+                    String col3[] = dataRow.getProperty(2).toString().split(delims); //Created--
+                    String col4[] = dataRow.getProperty(3).toString().split(delims); //DocumentNo--
+                    String col5[] = dataRow.getProperty(4).toString().split(delims); //GrandTotal--
+                    String col6[] = dataRow.getProperty(5).toString().split(delims); //IsDelivered--
+                    String col7[] = dataRow.getProperty(6).toString().split(delims); //TotalLines--
+                    String col8[] = dataRow.getProperty(7).toString().split(delims); //Updated--
+
+                    String qry = "Insert into C_Order values (";
+                    qry = qry + col2[1] + ",'" + col3[1] + "','" + col8[1] + "','";
+                    qry = qry + col4[1] + "','" + col6[1] + "'," + col1[1] + ",";
+                    qry = qry + col7[1] + "," + col5[1] + ", 'N','N')";
+
+                    db.executeSQL(qry);
+                }
+            }
+        } catch (Exception e){
+            System.out.print(e);
+        }finally {
+            db.close();
+        }
+    }
+
+    private int getProvId(){
+        int provId = 0;
+        DBHelper db = null;
+        String qry1 = "select c_bpartner_id from c_bpartner where name = '" + tvEmpresa.getText().toString() + "'";
+
+        try {
+            db = new DBHelper(getApplicationContext());
+            db.openDB(0);
+            Cursor rs = db.querySQL(qry1, null);
+            rs.moveToFirst();
+            provId = rs.getInt(0);
+
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+        return provId;
+    }
+
+    private void insertOrderLines(int partnerId){
+        DBHelper db = null;
+        String qry1 = "select c_order_id from c_order where c_bpartner_id = " + partnerId;
+
+        try {
+            db = new DBHelper(getApplicationContext());
+            db.openDB(0);
+            Cursor rs = db.querySQL(qry1, null);
+
+            if(rs.moveToFirst()){
+                do{
+                    getOrdersLines(rs.getInt(0));
+                }while(rs.moveToNext());
+            }
+
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+
+    }
+
+    private void getOrdersLines(int ordId){
+
+        WebServices ws = new WebServices();
+        String[] columYVal = new String[2];
+        SoapObject resultado_xml = null;
+        int i = 0;
+        columYVal[i++] = "C_Order_ID"; //colum
+        columYVal[i++] = String.valueOf(ordId); //val
+
+        resultado_xml = ws.webServiceQry("LoadOrderLines", "C_OrderLine", columYVal);
+        insertOrdersLinesXML(resultado_xml);
+
+    }
+
+    private void insertOrdersLinesXML(SoapObject so){
+        SoapObject dataResult = (SoapObject)so.getProperty(0);
+        int tam = dataResult.getPropertyCount();
+        String delims = "[=;]";
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+
+        try{
+            if(tam > 0) {
+                for (int i = 0; i < tam; i++) {
+                    SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
+                    String col1[] = dataRow.getProperty(0).toString().split(delims); //C_BPartner_ID--
+                    String col2[] = dataRow.getProperty(1).toString().split(delims); //C_Order_ID--
+                    String col3[] = dataRow.getProperty(2).toString().split(delims); //C_OrderLine_ID--
+                    String col4[] = dataRow.getProperty(3).toString().split(delims); //Created--
+                    String col5[] = dataRow.getProperty(4).toString().split(delims); //DateOrdered--
+                    String col6[] = dataRow.getProperty(5).toString().split(delims); //DatePromised--
+                    String col7[] = dataRow.getProperty(6).toString().split(delims); //Line--
+                    String col8[] = dataRow.getProperty(7).toString().split(delims); //M_Product_ID--
+                    String col9[] = dataRow.getProperty(8).toString().split(delims); //QtyDelivered--
+                    String col10[] = dataRow.getProperty(9).toString().split(delims); //QtyInvoiced--
+                    String col11[] = dataRow.getProperty(10).toString().split(delims); //QtyOrdered--
+                    String col12[] = dataRow.getProperty(11).toString().split(delims); //QtyReserved--
+                    String col13[] = dataRow.getProperty(12).toString().split(delims); //Updated--
+
+                    String qry = "Insert into c_orderline values (";
+                    qry = qry + col3[1] + ",'" + col4[1] + "','" + col13[1] + "',";//
+                    qry = qry + col2[1] + "," + col7[1] + "," + col1[1] + ",'";//
+                    qry = qry + col5[1] + "','" + col6[1] + "'," + col8[1] + ",";//
+                    qry = qry + col11[1] + "," + col12[1] + "," + col9[1] + ",";
+                    qry = qry + col10[1] + ", '')";
+
+                    db.executeSQL(qry);
+                }
+            }
+        } catch (Exception e){
+            System.out.print(e);
+        }finally {
+            db.close();
+        }
+    }
+
+    private void insertProds(){
+
+        WebServices ws = new WebServices();
+        String[] columYVal = new String[4];
+        SoapObject resultado_xml = null;
+        SoapObject resultado_xml2 = null;
+
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+        db.executeSQL("DELETE FROM uy_productupc where m_product_id in (select m_product_id FROM M_Product where borrar = 'Y')");
+        db.executeSQL("DELETE FROM M_Product where borrar = 'Y'");
+        Cursor rs = db.querySQL("select m_product_id from c_orderline", null);
+
+        if(rs.moveToFirst()){
+            do{
+                int i = 0;
+                columYVal[i++] = "IsActive"; //colum
+                columYVal[i++] = "Y"; //val
+                columYVal[i++] = "M_Product_ID"; //colum
+                columYVal[i++] = String.valueOf(rs.getInt(0)); //val
+                resultado_xml = ws.webServiceQry("LoadProducts", "M_Product", columYVal);
+                insertProds(resultado_xml);
+                resultado_xml2 = ws.webServiceQry("LoadUPC", "UY_ProductUpc", columYVal);
+                insertProdsUPC(resultado_xml2);
+            }while(rs.moveToNext());
+        }
+    }
+
+    private void insertProds(SoapObject so){
+
+        SoapObject dataResult = (SoapObject)so.getProperty(0);
+
+        int tam = dataResult.getPropertyCount();
+        String delims = "[=;]";
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+
+        try{
+            if(tam > 0) {
+                for (int i = 0; i < tam; i++) {
+                    SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
+                    String col1[] = dataRow.getProperty(0).toString().split(delims); //Description
+                    String col2[] = dataRow.getProperty(1).toString().split(delims); //M_Product_ID
+                    String col3[] = dataRow.getProperty(2).toString().split(delims); //Name
+                    String col4[] = dataRow.getProperty(3).toString().split(delims); //UPC
+
+                    String qry = "Insert into M_Product values (";
+                    qry = qry + col2[1] + ",'" + col3[1] + "','" + col1[1] + "','" + col4[1] + "','N')";
+
+                    db.executeSQL(qry);
+                }
+            }
+        } catch (Exception e){
+            System.out.print(e);
+        }finally {
+            db.close();
+        }
+    }
+
+    private void insertProdsUPC(SoapObject so){
+
+        SoapObject dataResult = (SoapObject)so.getProperty(0);
+
+        int tam = dataResult.getPropertyCount();
+        String delims = "[=;]";
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+
+        try{
+            if(tam > 0) {
+                for (int i = 0; i < tam; i++) {
+                    SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
+                    String col1[] = dataRow.getProperty(0).toString().split(delims); //M_Product_ID
+                    String col2[] = dataRow.getProperty(1).toString().split(delims); //UPC
+                    String col3[] = dataRow.getProperty(2).toString().split(delims); //UY_ProductUpc_ID
+
+                    String qry = "Insert into uy_productupc values (";
+                    qry = qry + col3[1] + ",'" + col1[1] + "','" + col2[1] + "')";
+
+                    db.executeSQL(qry);
+                }
+            }
+        } catch (Exception e){
+            System.out.print(e);
+        }finally {
+            db.close();
+        }
     }
 }

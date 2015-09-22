@@ -16,7 +16,8 @@
     <!-- Menu-->
     <string name="txtMenu">Menu</string>
     <string name="txtProcessPO">Procesar Orden de Compra</string>
-    <string name="txtSync">Sincronizar</string>
+    <string name="txtSyncProv">Sincronizar Proveedores</string>
+    <string name="txtSyncProd">Sincronizar Productos</string>
 
     <!-- Lista Orden-->
     <string name="txtChoseOrder">Elija las Ordenes</string>

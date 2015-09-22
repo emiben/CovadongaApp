@@ -56,10 +56,10 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/txtSync"
+                android:text="@string/txtSyncProv"
                 android:background="@drawable/button_customize"
                 android:textColor="#FFFFFF"
-                android:id="@+id/button2"
+                android:id="@+id/btnSincProv"
                 android:layout_marginTop="10dp" />
 
         </LinearLayout>
