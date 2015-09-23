@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.openup.covadonga.covadongaapp.util.DBHelper;
 
@@ -72,6 +73,49 @@ public class ListaOrdenesActivity extends ActionBarActivity {
         btnOK = (Button) findViewById(R.id.btnOkOrd);
     }
 
+    public void setActions(){
+
+        etFilter.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
+                // When user changed the Text
+                ListaOrdenesActivity.this.adaptador.getFilter().filter(cs);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
+                                          int arg3) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        btnOK.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SparseBooleanArray checkedItems = lvOrders.getCheckedItemPositions();
+                if (checkedItems.size() > 0) {
+                    startIngresoFacturasActivity(checkedItems);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Por Favor elija una Orden!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startListaProveedorActivity();
+            }
+        });
+    }
+
     public void loadOrders(){
         DBHelper db = null;
         String qry1 = "select c_bpartner_id from c_bpartner where name = '" + prov[0] + "'";
@@ -107,55 +151,20 @@ public class ListaOrdenesActivity extends ActionBarActivity {
 
     }
 
-    public void setActions(){
 
-        etFilter.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
-                // When user changed the Text
-                ListaOrdenesActivity.this.adaptador.getFilter().filter(cs);
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-                                          int arg3) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
-
-        btnOK.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startIngresoFacturasActivity();
-            }
-        });
-    }
-
-    private void startIngresoFacturasActivity() {
+    private void startIngresoFacturasActivity(SparseBooleanArray checkedItems) {
         Intent i = new Intent(this, IngresoFacturasActivity.class);
         Bundle b = new Bundle();
-        SparseBooleanArray checkedItems = lvOrders.getCheckedItemPositions();
 
-        if (checkedItems != null) {
-            //b.putInt("1", checkedItems.size());
-            String item = "";
-            for (int j=0; j<checkedItems.size(); j++) {
-                if (checkedItems.valueAt(j)) {
-                    item = item + lvOrders.getAdapter().getItem(
-                            checkedItems.keyAt(j)).toString() + ";";
-                    //Log.i(TAG,item + " was selected");
-                    b.putString("Ordenes", item);
-                }
+        String item = "";
+        for (int j=0; j<checkedItems.size(); j++) {
+            if (checkedItems.valueAt(j)) {
+                item = item + lvOrders.getAdapter().getItem(
+                        checkedItems.keyAt(j)).toString() + ";";
+                //Log.i(TAG,item + " was selected");
+                b.putString("Ordenes", item);
             }
         }
-
         i.putExtras(b);
         this.finish();
         startActivity(i);
@@ -170,5 +179,11 @@ public class ListaOrdenesActivity extends ActionBarActivity {
             prov = b.getString("Prov").split(";");
             tam = prov.length;
         }
+    }
+
+    private void startListaProveedorActivity() {
+        Intent i = new Intent(this, ListaProveedorActivity.class);
+        this.finish();
+        startActivity(i);
     }
 }

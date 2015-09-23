@@ -186,16 +186,14 @@ public class ListaProveedorActivity extends ActionBarActivity {
     private void getProvOrders(int partnerID){
 
         WebServices ws = new WebServices();
-        String[] columYVal = new String[4];
+        String[] columYVal = new String[2];
         SoapObject resultado_xml = null;
         int i = 0;
-        columYVal[i++] = "DocStatus"; //colum
-        columYVal[i++] = "CO"; //val           ///////////Cambiar a CO
 
         columYVal[i++] = "C_BPartner_ID"; //colum
         columYVal[i++] = String.valueOf(partnerID); //val
 
-        resultado_xml = ws.webServiceQry("LoadProvOrders", "C_Order", columYVal);
+        resultado_xml = ws.webServiceQry("LoadProvOrders", "VUY_MB_Order", columYVal);
         insertOrders(resultado_xml);
         insertOrderLines(partnerID);
 
@@ -215,17 +213,11 @@ public class ListaProveedorActivity extends ActionBarActivity {
                     SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
                     String col1[] = dataRow.getProperty(0).toString().split(delims); //C_BPartner_ID--
                     String col2[] = dataRow.getProperty(1).toString().split(delims); //C_Order_ID--
-                    String col3[] = dataRow.getProperty(2).toString().split(delims); //Created--
-                    String col4[] = dataRow.getProperty(3).toString().split(delims); //DocumentNo--
-                    String col5[] = dataRow.getProperty(4).toString().split(delims); //GrandTotal--
-                    String col6[] = dataRow.getProperty(5).toString().split(delims); //IsDelivered--
-                    String col7[] = dataRow.getProperty(6).toString().split(delims); //TotalLines--
-                    String col8[] = dataRow.getProperty(7).toString().split(delims); //Updated--
+                    String col3[] = dataRow.getProperty(2).toString().split(delims); //DocumentNo
+
 
                     String qry = "Insert into C_Order values (";
-                    qry = qry + col2[1] + ",'" + col3[1] + "','" + col8[1] + "','";
-                    qry = qry + col4[1] + "','" + col6[1] + "'," + col1[1] + ",";
-                    qry = qry + col7[1] + "," + col5[1] + ", 'N','N')";
+                    qry = qry + col2[1] + ",'" + col3[1] + "'," + col1[1] + ", 'N','N')";
 
                     db.executeSQL(qry);
                 }
@@ -289,7 +281,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
         columYVal[i++] = "C_Order_ID"; //colum
         columYVal[i++] = String.valueOf(ordId); //val
 
-        resultado_xml = ws.webServiceQry("LoadOrderLines", "C_OrderLine", columYVal);
+        resultado_xml = ws.webServiceQry("LoadOrderLines", "VUY_MB_OrderLine", columYVal);
         insertOrdersLinesXML(resultado_xml);
 
     }
@@ -309,23 +301,14 @@ public class ListaProveedorActivity extends ActionBarActivity {
                     String col1[] = dataRow.getProperty(0).toString().split(delims); //C_BPartner_ID--
                     String col2[] = dataRow.getProperty(1).toString().split(delims); //C_Order_ID--
                     String col3[] = dataRow.getProperty(2).toString().split(delims); //C_OrderLine_ID--
-                    String col4[] = dataRow.getProperty(3).toString().split(delims); //Created--
-                    String col5[] = dataRow.getProperty(4).toString().split(delims); //DateOrdered--
-                    String col6[] = dataRow.getProperty(5).toString().split(delims); //DatePromised--
-                    String col7[] = dataRow.getProperty(6).toString().split(delims); //Line--
-                    String col8[] = dataRow.getProperty(7).toString().split(delims); //M_Product_ID--
-                    String col9[] = dataRow.getProperty(8).toString().split(delims); //QtyDelivered--
-                    String col10[] = dataRow.getProperty(9).toString().split(delims); //QtyInvoiced--
-                    String col11[] = dataRow.getProperty(10).toString().split(delims); //QtyOrdered--
-                    String col12[] = dataRow.getProperty(11).toString().split(delims); //QtyReserved--
-                    String col13[] = dataRow.getProperty(12).toString().split(delims); //Updated--
+                    String col4[] = dataRow.getProperty(3).toString().split(delims); //Line--
+                    String col5[] = dataRow.getProperty(4).toString().split(delims); //M_Product_ID--
+                    String col6[] = dataRow.getProperty(5).toString().split(delims); //qtypend--
+
 
                     String qry = "Insert into c_orderline values (";
-                    qry = qry + col3[1] + ",'" + col4[1] + "','" + col13[1] + "',";//
-                    qry = qry + col2[1] + "," + col7[1] + "," + col1[1] + ",'";//
-                    qry = qry + col5[1] + "','" + col6[1] + "'," + col8[1] + ",";//
-                    qry = qry + col11[1] + "," + col12[1] + "," + col9[1] + ",";
-                    qry = qry + col10[1] + ", '')";
+                    qry = qry + col3[1] + "," + col2[1] + "," + col4[1] + ",";//
+                    qry = qry + col1[1] + "," + col5[1] + "," + col6[1] + ",0,0,'')";
 
                     db.executeSQL(qry);
                 }

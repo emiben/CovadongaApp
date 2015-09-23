@@ -58,7 +58,8 @@
         </activity>
         <activity
             android:name=".AsociarBarCodeActivity"
-            android:label="@string/title_activity_asociar_bar_code" >
+            android:label="@string/title_activity_asociar_bar_code"
+            android:windowSoftInputMode="stateHidden|adjustPan" >
         </activity>
     </application>
 

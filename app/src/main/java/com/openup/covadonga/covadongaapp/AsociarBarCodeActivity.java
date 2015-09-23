@@ -165,14 +165,18 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
 
     private void insertBarCode(int prodId){
             DBHelper db = null;
+            int id = 1;
 
             try {
                 db = new DBHelper(this);
                 db.openDB(1);
+                String qry = "select max(uy_productupc_id) from uy_productupc where uy_productupc_id < 1000";
+                Cursor rs = db.querySQL(qry, null);
+                if(rs.moveToFirst()){
+                    id = id + rs.getInt(0);
+                }
                 ContentValues cv = new ContentValues();
-                cv.put("uy_productupc_id", "1");
-                cv.put("created", "ENVIAR");
-                cv.put("updated", "ENVIAR");
+                cv.put("uy_productupc_id", id);
                 cv.put("m_product_id", prodId);
                 cv.put("upc", barCode);
 

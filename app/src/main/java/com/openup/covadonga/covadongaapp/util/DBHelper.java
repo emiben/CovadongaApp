@@ -120,6 +120,10 @@ public class DBHelper extends SQLiteOpenHelper {
         return db.update(table, values, where, argmWhere);
     }
 
+    public int deleteSQL(String table, String whereClause, String[] whereArgs){
+        return db.delete(table, whereClause, whereArgs);
+    }
+
     /**
      * Execute SQL
      *

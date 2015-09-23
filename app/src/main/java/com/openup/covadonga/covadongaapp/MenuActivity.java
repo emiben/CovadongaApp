@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.openup.covadonga.covadongaapp.util.DBHelper;
+import com.openup.covadonga.covadongaapp.util.SincronizeData;
 import com.openup.covadonga.covadongaapp.util.WebServices;
 
 import org.ksoap2.serialization.SoapObject;
@@ -19,6 +20,7 @@ public class MenuActivity extends ActionBarActivity {
 
     private Button          btnProcessPO;
     private Button          btnSincProv;
+    private Button          btnSincUPC;
     private ProgressDialog  pDialog;
 
     @Override
@@ -55,6 +57,7 @@ public class MenuActivity extends ActionBarActivity {
     public void getViewElements(){
         btnProcessPO = (Button) findViewById(R.id.btnProcessPO);
         btnSincProv = (Button) findViewById(R.id.btnSincProv);
+        btnSincUPC = (Button) findViewById(R.id.btnSincUPC);
     }
 
     public void setActions(){
@@ -72,6 +75,13 @@ public class MenuActivity extends ActionBarActivity {
             }
         });
 
+        btnSincUPC.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sincronizarUPC();
+            }
+        });
+
     }
 
     private void startListaClienteActivity() {
@@ -85,6 +95,21 @@ public class MenuActivity extends ActionBarActivity {
             public void run() {
                 try {
                     sincronizar();
+                } catch (Exception e) {
+                    e.getMessage();
+                }
+                pDialog.dismiss();
+            }
+        }.start();
+    }
+
+    public void sincronizarUPC(){
+        pDialog = ProgressDialog.show(this, null, "Enviando datos...", true);
+        final SincronizeData sd = new SincronizeData();
+        new Thread() {
+            public void run() {
+                try {
+                    sd.sendUPC();
                 } catch (Exception e) {
                     e.getMessage();
                 }
