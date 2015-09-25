@@ -1,10 +1,13 @@
 package com.openup.covadonga.covadongaapp;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -206,6 +209,31 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         i.putExtras(b);
         finish();
         startActivity(i);
+    }
+
+    public void insertUPC(){
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder1.setView(input);
+        builder1.setCancelable(true);
+        builder1.setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        barCode = Integer.valueOf(input.getText().toString());
+                        loadInvoices();
+                        setActions();
+                    }
+                });
+        builder1.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
     }
 
 

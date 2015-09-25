@@ -1,6 +1,9 @@
 package com.openup.covadonga.covadongaapp;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 import android.content.ContentValues;
@@ -54,6 +57,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
     private ViewPager   mViewPager;
     private String[]    ordenes;
     private int         tam;
+
 
 
 
@@ -190,6 +194,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         private Button      finalizar;
         private int         docID;
         private int         ordId;
+        private long        barCode;
 
         /**
          * Returns a new instance of this fragment for the given section
@@ -315,7 +320,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                 @Override
                 public void onClick(View v) {
                     //startConfirmarCantidadesActivity(7891010775629L);
-                    startConfirmarCantidadesActivity(0000000000000L);
+                    //startConfirmarCantidadesActivity(0000000000000L);
+                    insertUPC();
                 }
             });
 
@@ -348,6 +354,30 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             });
         }
 
+        public void insertUPC(){
+            android.app.AlertDialog.Builder builder1 = new android.app.AlertDialog.Builder(getActivity());
+            final EditText input = new EditText(getActivity());
+            input.setInputType(InputType.TYPE_CLASS_NUMBER);
+            builder1.setView(input);
+            builder1.setTitle("Ingrese el Codigo de Barras");
+            builder1.setCancelable(true);
+            builder1.setPositiveButton("OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            barCode = Long.valueOf(input.getText().toString());
+                            startConfirmarCantidadesActivity(barCode);
+                        }
+                    });
+            builder1.setNegativeButton("Cancel",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+            android.app.AlertDialog alert11 = builder1.create();
+            alert11.show();
+        }
 
 
         public void startConfirmarCantidadesActivity(long barCode){
@@ -362,18 +392,20 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         public void finalizeOrder(){
             DBHelper db = null;
             int res;
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
             String where = " c_order_id = " + ordId;
+            Date date = new Date();
+            dateFormat.format(date);
 
             try {
                 db = new DBHelper(CustomApplication.getCustomAppContext());
                 db.openDB(1);
                 ContentValues cv = new ContentValues();
                 cv.put("finalizado", "Y");
+                cv.put("fecha", date.toString());
 
                 res = db.updateSQL("c_order", cv, where, null);
-
-                //rs = db.querySQL(qry, null);
                 if(res > 0){
                     Toast.makeText(getActivity().getBaseContext(), "Orden Finalizada!",
                             Toast.LENGTH_SHORT).show();

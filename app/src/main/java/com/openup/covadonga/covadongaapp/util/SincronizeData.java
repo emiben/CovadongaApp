@@ -56,4 +56,80 @@ public class SincronizeData {
             db.close();
         }
     }
+
+    public void sendOrders(){
+        DBHelper db = null;
+        Cursor ordCurs;
+        OrderTo ord = null;
+        OrderTo[] orders;
+
+        ////Selecciono las ordenes marcadas como finalizadas
+        try{
+            db = new DBHelper(CustomApplication.getCustomAppContext());
+            db.openDB(1);
+            int i = 0;
+            String qryOrd = "select c_order_id, c_bpartner_id, fecha from c_order where finalizado = 'Y'";
+            ordCurs = db.querySQL(qryOrd, null);
+            orders = new OrderTo[ordCurs.getCount()];
+            if(ordCurs.moveToFirst()) {
+                do {
+                    ord.setAdClientId("1003360");
+                    ord.setAdOrgId("1000007");
+                    ord.setOrderId(ordCurs.getString(0));
+                    ord.setPartnerId(ordCurs.getString(1));
+                    ord.setDate(ordCurs.getString(2));
+                    ord.setWarehouseId("1000053");
+                    ord.setDeviceId("dev 1");
+                    addOrderLines(ord, ordCurs.getString(0));
+                    orders[i] = ord;
+                } while (ordCurs.moveToNext());
+                ///////llamar al WS pasandole orders
+            }
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+    }
+
+    private void addOrderLines(OrderTo ord, String ordId){
+        DBHelper db = null;
+        Cursor ordLineCurs;
+        OrderLine ordLine = null;
+        OrderLine[] orderLines;
+
+        try {
+            db = new DBHelper(CustomApplication.getCustomAppContext());
+            int i = 0;
+            String qryOrdLine = "select l.c_orderline_id, l.c_order_id, l.m_product_id," +
+                    " l.qtyinvoiced, l.qtydelivered, l.factura_id, f.fecha" +
+                    " from c_orderline l join factura f" +
+                    " on l.factura_id = f.factura_id" +
+                    " where l.c_order_id = " + ordId;
+            ordLineCurs = db.querySQL(qryOrdLine, null);
+            orderLines = new OrderLine[ordLineCurs.getCount()];
+            if (ordLineCurs.moveToFirst()) {
+                do {
+                    ordLine.setAdClientId("1003360");
+                    ordLine.setAdOrgId("1000007");
+                    ordLine.setOrderLineId(ordLineCurs.getString(0));
+                    ordLine.setOrderId(ordLineCurs.getString(1));
+                    ordLine.setProductId(ordLineCurs.getString(2));
+                    ordLine.setQtyInvoiced(ordLineCurs.getString(3));
+                    ordLine.setQtyDelivered(ordLineCurs.getString(4));
+                    ordLine.setNroFactura(ordLineCurs.getString(5));
+                    ordLine.setFechaFactura(ordLineCurs.getString(6));
+                    orderLines[i] = ordLine;
+                    i++;
+                } while (ordLineCurs.moveToNext());
+                ord.setoL(orderLines);
+            }
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+        }
+    }
+
+
+
 }

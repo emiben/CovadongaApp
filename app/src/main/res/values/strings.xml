@@ -18,6 +18,7 @@
     <string name="txtProcessPO">Procesar Orden de Compra</string>
     <string name="txtSyncProv">Sincronizar Proveedores</string>
     <string name="txtSyncUPC">Enviar nuevos UPC</string>
+    <string name="txtSyncOrders">Enviar Ordenes Finalizadas</string>
 
     <!-- Lista Orden-->
     <string name="txtChoseOrder">Elija las Ordenes</string>

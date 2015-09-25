@@ -91,11 +91,11 @@ public class MainActivity extends ActionBarActivity {
                 pswIn = txtPsw.getText().toString();
                 //if(u.equals("admin") && p.equals("admin")){
                 if(isOnline()){
-                    if(loginWS(userIn,pswIn)){
-//                        startMenuActivity();
-                    }else{
-
-                    }
+                    //if(loginWS(userIn,pswIn)){
+                       startMenuActivity();
+//                    }else{
+//
+//                    }
                 }else{
 
                     CharSequence text =  getResources().getString(R.string.noInternet);

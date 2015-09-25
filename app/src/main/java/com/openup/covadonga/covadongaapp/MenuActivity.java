@@ -21,6 +21,7 @@ public class MenuActivity extends ActionBarActivity {
     private Button          btnProcessPO;
     private Button          btnSincProv;
     private Button          btnSincUPC;
+    private Button          btnSincOrders;
     private ProgressDialog  pDialog;
 
     @Override
@@ -58,6 +59,7 @@ public class MenuActivity extends ActionBarActivity {
         btnProcessPO = (Button) findViewById(R.id.btnProcessPO);
         btnSincProv = (Button) findViewById(R.id.btnSincProv);
         btnSincUPC = (Button) findViewById(R.id.btnSincUPC);
+        btnSincOrders = (Button) findViewById(R.id.btnSincOrders);
     }
 
     public void setActions(){
@@ -79,6 +81,13 @@ public class MenuActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 sincronizarUPC();
+            }
+        });
+
+        btnSincOrders.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sincronizarOrders();
             }
         });
 
@@ -168,6 +177,21 @@ public class MenuActivity extends ActionBarActivity {
         }finally {
             db.close();
         }
+    }
+
+    public void sincronizarOrders(){
+        pDialog = ProgressDialog.show(this, null, "Enviando datos...", true);
+        final SincronizeData sd = new SincronizeData();
+        new Thread() {
+            public void run() {
+                try {
+                    sd.sendOrders();
+                } catch (Exception e) {
+                    e.getMessage();
+                }
+                pDialog.dismiss();
+            }
+        }.start();
     }
 
 

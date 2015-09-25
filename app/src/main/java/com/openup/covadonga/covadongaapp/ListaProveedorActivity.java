@@ -194,9 +194,13 @@ public class ListaProveedorActivity extends ActionBarActivity {
         columYVal[i++] = String.valueOf(partnerID); //val
 
         resultado_xml = ws.webServiceQry("LoadProvOrders", "VUY_MB_Order", columYVal);
-        insertOrders(resultado_xml);
-        insertOrderLines(partnerID);
-
+        if(resultado_xml == null){
+            Toast.makeText(getApplicationContext(), "Error al obtener las ordenes, por favor intente denuevo!",
+                                Toast.LENGTH_SHORT).show();
+        }else{
+            insertOrders(resultado_xml);
+            insertOrderLines(partnerID);
+        }
     }
 
     private void insertOrders(SoapObject so){
