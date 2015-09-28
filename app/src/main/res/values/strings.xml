@@ -11,6 +11,7 @@
     <string name="txtBtnLogin">Inicio</string>
     <string name="title_activity_principal">Inicio</string>
     <string name="user_pws_error">Usuario no registrado</string>
+    <string name="user_wh_error">Usuario sin deposito</string>
     <string name="title_activity_lista_cliente">ListaClienteActivity</string>
 
     <!-- Menu-->

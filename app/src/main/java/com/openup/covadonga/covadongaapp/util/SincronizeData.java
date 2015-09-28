@@ -55,6 +55,7 @@ public class SincronizeData {
     }
 
     public void sendOrders(){
+        Env env = new Env();
         DBHelper db = null;
         Cursor ordCurs;
         OrderTo ord = null;
@@ -64,13 +65,16 @@ public class SincronizeData {
         try{
             db = new DBHelper(CustomApplication.getCustomAppContext());
             db.openDB(1);
+            SoapObject resp = new SoapObject();
+            ws = new WebServices();
             int i = 0;
             String qryOrd = "select c_order_id, c_bpartner_id, fecha from c_order where finalizado = 'Y'";
             ordCurs = db.querySQL(qryOrd, null);
             orders = new OrderTo[ordCurs.getCount()];
+            ord = new OrderTo();
             if(ordCurs.moveToFirst()) {
                 do {
-                    ord.setAdClientId("1003360");
+                    ord.setAdClientId(env.getAdUsr());
                     ord.setAdOrgId("1000007");
                     ord.setOrderId(ordCurs.getString(0));
                     ord.setPartnerId(ordCurs.getString(1));
@@ -80,8 +84,10 @@ public class SincronizeData {
                     addOrderLines(ord, ordCurs.getString(0));
                     orders[i] = ord;
                 } while (ordCurs.moveToNext());
-                ///////llamar al WS pasandole orders
+                ///////llamar al WS pasandole order
+                ws.SoapCallerInOrder(orders);
                 ////Con la respuesta llamar a la func que elimina los datos de las ordenes
+                resp = ws.getResponse();
             }
         }catch (Exception e) {
             e.getMessage();
@@ -91,6 +97,7 @@ public class SincronizeData {
     }
 
     private void addOrderLines(OrderTo ord, String ordId){
+        Env env = new Env();
         DBHelper db = null;
         Cursor ordLineCurs;
         OrderLine ordLine = null;
@@ -98,6 +105,7 @@ public class SincronizeData {
 
         try {
             db = new DBHelper(CustomApplication.getCustomAppContext());
+            db.openDB(0);
             int i = 0;
             String qryOrdLine = "select l.c_orderline_id, l.c_order_id, l.m_product_id," +
                     " l.qtyinvoiced, l.qtydelivered, l.factura_id, f.fecha" +
@@ -106,9 +114,10 @@ public class SincronizeData {
                     " where l.c_order_id = " + ordId;
             ordLineCurs = db.querySQL(qryOrdLine, null);
             orderLines = new OrderLine[ordLineCurs.getCount()];
+            ordLine = new OrderLine();
             if (ordLineCurs.moveToFirst()) {
                 do {
-                    ordLine.setAdClientId("1003360");
+                    ordLine.setAdClientId(env.getAdUsr());
                     ordLine.setAdOrgId("1000007");
                     ordLine.setOrderLineId(ordLineCurs.getString(0));
                     ordLine.setOrderId(ordLineCurs.getString(1));

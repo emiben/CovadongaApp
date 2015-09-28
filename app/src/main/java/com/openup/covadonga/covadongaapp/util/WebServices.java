@@ -22,9 +22,13 @@ public class WebServices {
     private SoapObject response = null;
     private Object respuesta;
     private final String NAMESPACE = "http://3e.pl/ADInterface";
+    private final String NAMESPACE_ORD = "http://www.erpconsultoresyasociados.com";
     private final String URL = "http://covadonga.dyndns.org:8273/ADInterface-1.0/services/ModelADService";
+    private final String URL_ORD = "http://covadonga.dyndns.org:8273/ADInterface-1.0/services/AppDroidServices?wsdl";
     private final String METHOD_NAME = "queryData";
+    private final String METHOD_NAME_ORD = "InOrderRT";
     private final String SOAP_ACTION = "http://3e.pl/ADInterface/ModelADServicePortType/queryDataRequest";
+    private final String SOAP_ACTION_ORD = "http://www.erpconsultoresyasociados.com/AppDroidServicesPortType/InOrderRTRequest";
     private final String METHOD_NAME_INSERT = "createData";
     private final String SOAP_ACTION_INSERT = "http://3e.pl/ADInterface/ModelADServicePortType/createDataRequest";
     private String mensajeWS = "";
@@ -314,16 +318,16 @@ public class WebServices {
     }
 
 
-    public void SoapCallerInOrder(String _URL, String _NAMESPACE, String _METHOD_NAME, String _SOAP_ACTION, String[] ModelCRUDArguments, OrderTo[] m_orders){
+    public void SoapCallerInOrder(OrderTo[] m_orders){
         HttpClient httpClient = new DefaultHttpClient();
-        HttpPost httpPost = new HttpPost(_URL);
+        HttpPost httpPost = new HttpPost(URL_ORD);
 
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         envelope.encodingStyle = SoapSerializationEnvelope.ENC;
 
         //http://www.erpcya.com/
         String _METHOD_NAME_DOS = "http://www.erpcya.com/";
-        SoapObject request = new SoapObject(_NAMESPACE, _METHOD_NAME); //InOrder
+        SoapObject request = new SoapObject(NAMESPACE_ORD, METHOD_NAME_ORD); //InOrder
         SoapObject inOrder = new SoapObject(_METHOD_NAME_DOS, "InOrderRT");
 
         PropertyInfo usrPI= new PropertyInfo();
@@ -387,13 +391,14 @@ public class WebServices {
         SoapSerializationEnvelope envp = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         envp.dotNet = true;
         envp.setOutputSoapObject(request);
-        HttpTransportSE androidHttpTransport = new HttpTransportSE(_URL);
+        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL_ORD);
         try {
-            androidHttpTransport.call(_SOAP_ACTION, envp);
+            androidHttpTransport.call(SOAP_ACTION_ORD, envp);
             this.response = (SoapObject)envp.getResponse();
             this.respuesta = envp.getResponse();
-        }
-        catch (IOException e){
+        }catch (EOFException e1){
+            mensajeWS = "EOFException";
+        }catch (IOException e){
             Log.i("WS Error->", e.toString());
         }
         catch (Exception e) {
@@ -404,7 +409,7 @@ public class WebServices {
 
     private String[] obtenerDatosLinea(OrderLine unaLinea) {
         // TODO Auto-generated method stub
-        String[] ColumYVal = new String[30];
+        String[] ColumYVal = new String[18];
         int i=0;
         if (unaLinea!= null){
             ColumYVal[i++] = "AD_Client_ID"; //colum

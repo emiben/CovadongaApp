@@ -90,15 +90,15 @@ public class MainActivity extends ActionBarActivity {
                 userIn = txtUser.getText().toString();
                 pswIn = txtPsw.getText().toString();
                 //if(u.equals("admin") && p.equals("admin")){
-                if(isOnline()){
-                    if(loginWS(userIn,pswIn)){
-                       startMenuActivity();
-                    }else{
+                if (isOnline()) {
+                    if (loginWS(userIn, pswIn)) {
+                        startMenuActivity();
+                    } else {
 
                     }
-                }else{
+                } else {
 
-                    CharSequence text =  getResources().getString(R.string.noInternet);
+                    CharSequence text = getResources().getString(R.string.noInternet);
                     Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
                     toast.show();
                 }
@@ -128,11 +128,12 @@ public class MainActivity extends ActionBarActivity {
 
     private boolean loginWS(String u, String p) {
         final Env e = new Env();
+        final String[] adUsr = {""};
         pDialog = ProgressDialog.show(this, null, "Consultando..", true);
         new Thread(){
             public void run(){
                 try{
-                    retornoWS = loginWebServer(userIn,pswIn);
+                    adUsr[0] = loginWebServer(userIn,pswIn);
                 }catch (Exception e){
                     e.getMessage();
                 }
@@ -140,20 +141,24 @@ public class MainActivity extends ActionBarActivity {
                 (mCtx).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (retornoWS) {
-                            if(retornoWS){
-                                e.setUser(userIn);
-                                e.setPass(pswIn);
-                            }
-                            startMenuActivity();
-                        } else {
-                            Context context = getApplicationContext();
-                            CharSequence text =  getResources().getString(R.string.user_pws_error);
-                            int duration = Toast.LENGTH_SHORT;
-
-                            Toast toast = Toast.makeText(context, text, duration);
-                            toast.show();
-                        }
+                    if (adUsr[0].equals("-2")) {
+                        Context context = getApplicationContext();
+                        CharSequence text =  getResources().getString(R.string.user_wh_error);
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    } else if(adUsr[0].equals("-1")) {
+                        Context context = getApplicationContext();
+                        CharSequence text =  getResources().getString(R.string.user_pws_error);
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }else{
+                        e.setUser(userIn);
+                        e.setPass(pswIn);
+                        e.setadusr(adUsr[0]);
+                        startMenuActivity();
+                    }
                     }
                 });
             }
@@ -161,9 +166,9 @@ public class MainActivity extends ActionBarActivity {
         return retornoWS;
     }
 
-    private boolean loginWebServer(String userIn, String pswIn)
+    private String loginWebServer(String userIn, String pswIn)
     {
-        boolean reg = false;
+        String reg = "";
 
         final String NAMESPACE = Env.NAMESPACE;
         final String URL=Env.URL;
@@ -204,16 +209,22 @@ public class MainActivity extends ActionBarActivity {
         {
             transporte.call(SOAP_ACTION, envelope);
             SoapObject resultado_xml =(SoapObject)envelope.getResponse();
-            String status = resultado_xml.getProperty("status").toString();
+            SoapObject resSoap1 = (SoapObject)resultado_xml.getProperty(0);
+            SoapObject resSoap2 = (SoapObject)resSoap1.getProperty(0);
 
-            //SoapPrimitive resultado_xml =(SoapPrimitive)envelope.getResponse();
-            String res = resultado_xml.toString();
+            String res = resSoap2.getAttribute(1).toString();
 
-            if(status.equals("1000006"))
+            if(res.equals("-2"))
             {
-                Log.d(TAG, "Registrado en mi servidor.");
-                reg = true;
+                Log.d(TAG, "Usuario no registrado o Error en User o Pass.");
+                res = "-2";
+            }else if(res.equals("-1")){
+                Log.d(TAG, "Usuario sin Warehouse.");
+                res = "-1";
+            }else{
+                reg = res;
             }
+
         }
         catch (Exception e)
         {
