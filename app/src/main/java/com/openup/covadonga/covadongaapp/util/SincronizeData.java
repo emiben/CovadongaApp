@@ -15,7 +15,6 @@ public class SincronizeData {
     public void sendUPC(){
         ws = new WebServices();
         String[] columYVal = new String[6];
-        SoapObject resultado_xml = null;
         DBHelper db = null;
         String qryUPC = "select * from uy_productupc where uy_productupc_id < 1000";
 
@@ -40,12 +39,10 @@ public class SincronizeData {
                     if(ws.getResponse() != null) {
                         String res = (String) ws.getResponse().getAttribute(0);
                         if (Integer.valueOf(res) > 0) {
-//                            String qryDelUPC = "delete from uy_productupc where uy_productupc_id = " + rs.getInt(0);
-//                            Cursor cur = db.querySQL(qryDelUPC, null);
                             int resu = db.deleteSQL("uy_productupc","uy_productupc_id = "+rs.getInt(0), null);
                         } else {
-                            Toast.makeText(CustomApplication.getCustomAppContext(), "El UPC " + rs.getInt(0) + " no se pudo sincronizar!"
-                                    , Toast.LENGTH_SHORT).show();
+                            Toast.makeText(CustomApplication.getCustomAppContext(), "El UPC " + rs.getInt(0) +
+                                    " no se pudo sincronizar!", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }while(rs.moveToNext());
@@ -84,6 +81,7 @@ public class SincronizeData {
                     orders[i] = ord;
                 } while (ordCurs.moveToNext());
                 ///////llamar al WS pasandole orders
+                ////Con la respuesta llamar a la func que elimina los datos de las ordenes
             }
         }catch (Exception e) {
             e.getMessage();
@@ -127,6 +125,44 @@ public class SincronizeData {
         }catch (Exception e) {
             e.getMessage();
         } finally {
+        }
+    }
+
+    public void delSyncOrders(int[] orders){
+        int tam = orders.length;
+        int ordId;
+        String qryProdId;
+
+        for(int i=0; i<tam; i++){
+            DBHelper db = null;
+            ordId = orders[i];
+            qryProdId = "select distinct m_product_id from c_orderline where c_order_id = " + ordId;
+
+            try{
+                db = new DBHelper(CustomApplication.getCustomAppContext());
+                db.openDB(1);
+                Cursor rsProds = db.querySQL(qryProdId, null);
+                String whereProd = "";
+                String whereOrd = " c_order_id = " + ordId;
+                if(rsProds.moveToFirst()) {
+                    do {
+                        whereProd = "where m_product_id = "+ rsProds.getInt(0) +" and m_product_id not in" +
+                        " (select distinct m_product_id from c_orderline where c_order_id <> "+ ordId +")";
+
+                        int resuUpc = db.deleteSQL("uy_productupc", whereProd, null);
+                        int resuProd = db.deleteSQL("m_product", whereProd, null);
+
+                    } while (rsProds.moveToNext());
+                }
+                int resuFac = db.deleteSQL("factura", whereOrd, null);
+                int resuOL = db.deleteSQL("c_orderline", whereOrd, null);
+                int resuOrd = db.deleteSQL("c_order", whereOrd, null);
+
+            }catch (Exception e) {
+                e.getMessage();
+            } finally {
+                db.close();
+            }
         }
     }
 

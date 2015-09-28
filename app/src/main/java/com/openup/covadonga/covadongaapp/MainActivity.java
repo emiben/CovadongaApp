@@ -91,11 +91,11 @@ public class MainActivity extends ActionBarActivity {
                 pswIn = txtPsw.getText().toString();
                 //if(u.equals("admin") && p.equals("admin")){
                 if(isOnline()){
-                    //if(loginWS(userIn,pswIn)){
+                    if(loginWS(userIn,pswIn)){
                        startMenuActivity();
-//                    }else{
-//
-//                    }
+                    }else{
+
+                    }
                 }else{
 
                     CharSequence text =  getResources().getString(R.string.noInternet);
@@ -185,6 +185,13 @@ public class MainActivity extends ActionBarActivity {
         pswPI.setNamespace(NAMESPACE);
         pswPI.setType(String.class);
         adLoginRequest.addProperty(pswPI);
+
+        PropertyInfo stage= new PropertyInfo();
+        stage.setName("stage");
+        stage.setValue(0);
+        stage.setNamespace(NAMESPACE);
+        stage.setType(String.class);
+        adLoginRequest.addProperty(stage);
 
         request.addSoapObject(adLoginRequest);
         SoapSerializationEnvelope envelope =
