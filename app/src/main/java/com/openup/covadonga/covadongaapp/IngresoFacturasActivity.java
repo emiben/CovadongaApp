@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openup.covadonga.covadongaapp.util.CustomApplication;
@@ -28,6 +29,7 @@ import java.util.Calendar;
 public class IngresoFacturasActivity extends ActionBarActivity {
 
     private String      strOrdenes;
+    private String      prov;
     private String[]    ordenes;
     private int         tam;
     private Spinner     spinOrders;
@@ -104,7 +106,26 @@ public class IngresoFacturasActivity extends ActionBarActivity {
                 startProcesarOrdenActivity();
             }
         });
+
+        btnAtras.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startListaOrdenesActivity();
+                finish();
+            }
+        });
     }
+
+    private void startListaOrdenesActivity() {
+        Intent i = new Intent(this, ListaOrdenesActivity.class);
+        Bundle b = new Bundle();
+        b.putString("Prov", prov);
+
+        i.putExtras(b);
+        this.finish();
+        startActivity(i);
+    }
+
 
     public void getOrdersInfo() {
         // get the Intent that started this Activity
@@ -115,6 +136,7 @@ public class IngresoFacturasActivity extends ActionBarActivity {
             strOrdenes = b.getString("Ordenes");
             ordenes = b.getString("Ordenes").split(";");
             tam = ordenes.length;
+            prov = b.getString("Prov");
         }
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, ordenes);
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -131,7 +153,10 @@ public class IngresoFacturasActivity extends ActionBarActivity {
             int ordId;
             String factId = noFact.getText().toString();
             String[] parsFecha = fecFact.getText().toString().split("/");
-            String fecha = parsFecha[2] + "-" + parsFecha[1] + "-" + parsFecha[0];
+            if(Integer.valueOf(parsFecha[1]) < 10){
+                parsFecha[1] = "0"+parsFecha[1];
+            }
+            String fecha = parsFecha[2] + "-" + parsFecha[1] + "-" + parsFecha[0] + " 00:00:00";
 
             try{
                 db = new DBHelper(CustomApplication.getCustomAppContext());

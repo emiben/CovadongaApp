@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by Emilino on 07/09/2015.
  */
@@ -31,7 +35,6 @@ public class Env {
     public static String usr = null;
     public static String pass = null;
     public static String adUsr = null;
-
 
     /**************************************************************************
      *  Application Context
@@ -163,4 +166,11 @@ public class Env {
 
 
     //** metodos notifications
+    public static String getDateFormatString(Date dateOrdered, String formato) {
+
+        DateFormat fechaHora = new SimpleDateFormat(formato);
+        String convertido = fechaHora.format(dateOrdered);
+
+        return convertido;
+    }
 }

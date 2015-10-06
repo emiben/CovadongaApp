@@ -20,6 +20,7 @@
     <string name="txtSyncProv">Sincronizar Proveedores</string>
     <string name="txtSyncUPC">Enviar nuevos UPC</string>
     <string name="txtSyncOrders">Enviar Ordenes Finalizadas</string>
+    <string name="txtReport">Reportes</string>
 
     <!-- Lista Orden-->
     <string name="txtChoseOrder">Elija las Ordenes</string>
@@ -33,6 +34,10 @@
     <string name="txtDate">Fecha:</string>
     <string name="txtInsert">Guardar Factura</string>
     <string name="txtOrder">Orden:</string>
+
+
+    <!-- Reportes-->
+    <string name="txtReports">Reportes</string>
 
 
     <!-- Lista Cliente-->
@@ -89,6 +94,7 @@
     <string name="noInternet">No hay acceso a internet !!</string>
     <string name="title_activity_ingreso_facturas">IngresoFacturasActivity</string>
     <string name="title_activity_asociar_bar_code">AsociarBarCodeActivity</string>
+    <string name="title_activity_reportes">ReportesActivity</string>
 
 
 </resources>

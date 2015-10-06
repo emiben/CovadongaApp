@@ -194,9 +194,13 @@ public class ListaProveedorActivity extends ActionBarActivity {
         columYVal[i++] = String.valueOf(partnerID); //val
 
         resultado_xml = ws.webServiceQry("LoadProvOrders", "VUY_MB_Order", columYVal);
-        if(resultado_xml == null){
-            Toast.makeText(getApplicationContext(), "Error al obtener las ordenes, por favor intente denuevo!",
-                                Toast.LENGTH_SHORT).show();
+        if(ws.getMessage() == "EOFException"){
+            resultado_xml = ws.webServiceQry("LoadProvOrders", "VUY_MB_Order", columYVal);
+            insertOrders(resultado_xml);
+            insertOrderLines(partnerID);
+        }else if(ws.getMessage() == "Error!!"){
+            Toast.makeText(getApplicationContext(),
+                    "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
         }else{
             insertOrders(resultado_xml);
             insertOrderLines(partnerID);
@@ -219,9 +223,8 @@ public class ListaProveedorActivity extends ActionBarActivity {
                     String col2[] = dataRow.getProperty(1).toString().split(delims); //C_Order_ID--
                     String col3[] = dataRow.getProperty(2).toString().split(delims); //DocumentNo
 
-
                     String qry = "Insert into C_Order values (";
-                    qry = qry + col2[1] + ",'" + col3[1] + "'," + col1[1] + ", 'N','N')";
+                    qry = qry + col2[1] + ",'" + col3[1] + "'," + col1[1] + ", 'N','', '0')";
 
                     db.executeSQL(qry);
                 }
@@ -334,8 +337,8 @@ public class ListaProveedorActivity extends ActionBarActivity {
 
         DBHelper db = new DBHelper(this);
         db.openDB(1);
-        db.executeSQL("DELETE FROM uy_productupc where m_product_id in (select m_product_id FROM M_Product where borrar = 'Y')");
-        db.executeSQL("DELETE FROM M_Product where borrar = 'Y'");
+        //db.executeSQL("DELETE FROM uy_productupc where m_product_id in (select m_product_id FROM M_Product where borrar = 'Y')");
+        //db.executeSQL("DELETE FROM M_Product where borrar = 'Y'");
         Cursor rs = db.querySQL("select m_product_id from c_orderline", null);
 
         if(rs.moveToFirst()){
@@ -345,10 +348,26 @@ public class ListaProveedorActivity extends ActionBarActivity {
                 columYVal[i++] = "Y"; //val
                 columYVal[i++] = "M_Product_ID"; //colum
                 columYVal[i++] = String.valueOf(rs.getInt(0)); //val
+
                 resultado_xml = ws.webServiceQry("LoadProducts", "M_Product", columYVal);
-                insertProds(resultado_xml);
+                if(ws.getMessage() == "EOFException"){
+                    resultado_xml = ws.webServiceQry("LoadProducts", "M_Product", columYVal);
+                }else if(ws.getMessage() == "Error!!"){
+                    Toast.makeText(getApplicationContext(),
+                            "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
+                }else{
+                    insertProds(resultado_xml);
+                }
+
                 resultado_xml2 = ws.webServiceQry("LoadUPC", "UY_ProductUpc", columYVal);
-                insertProdsUPC(resultado_xml2);
+                if(ws.getMessage() == "EOFException"){
+                    resultado_xml2 = ws.webServiceQry("LoadUPC", "UY_ProductUpc", columYVal);
+                }else if(ws.getMessage() == "Error!!"){
+                    Toast.makeText(getApplicationContext(),
+                            "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
+                }else{
+                    insertProdsUPC(resultado_xml2);
+                }
             }while(rs.moveToNext());
         }
     }

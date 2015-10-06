@@ -91,11 +91,7 @@ public class MainActivity extends ActionBarActivity {
                 pswIn = txtPsw.getText().toString();
                 //if(u.equals("admin") && p.equals("admin")){
                 if (isOnline()) {
-                    if (loginWS(userIn, pswIn)) {
-                        startMenuActivity();
-                    } else {
-
-                    }
+                    loginWS(userIn, pswIn);
                 } else {
 
                     CharSequence text = getResources().getString(R.string.noInternet);
@@ -136,29 +132,30 @@ public class MainActivity extends ActionBarActivity {
                     adUsr[0] = loginWebServer(userIn,pswIn);
                 }catch (Exception e){
                     e.getMessage();
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
                 pDialog.dismiss();
                 (mCtx).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                    if (adUsr[0].equals("-2")) {
-                        Context context = getApplicationContext();
-                        CharSequence text =  getResources().getString(R.string.user_wh_error);
-                        int duration = Toast.LENGTH_SHORT;
-                        Toast toast = Toast.makeText(context, text, duration);
-                        toast.show();
-                    } else if(adUsr[0].equals("-1")) {
-                        Context context = getApplicationContext();
-                        CharSequence text =  getResources().getString(R.string.user_pws_error);
-                        int duration = Toast.LENGTH_SHORT;
-                        Toast toast = Toast.makeText(context, text, duration);
-                        toast.show();
-                    }else{
-                        e.setUser(userIn);
-                        e.setPass(pswIn);
-                        e.setadusr(adUsr[0]);
-                        startMenuActivity();
-                    }
+                        if (adUsr[0].equals("-2")) {
+                            CharSequence text =  getResources().getString(R.string.user_pws_error);
+                            Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+                        } else if(adUsr[0].equals("-1")) {
+                            CharSequence text =  getResources().getString(R.string.user_wh_error);
+                            Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+                        } else if(adUsr[0].equals("")) {
+                            CharSequence text =  "Error de Conexion. Intente denuevo.";
+                            Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+                        }else if(Integer.valueOf(adUsr[0]) > 0){
+                            e.setUser(userIn);
+                            e.setPass(pswIn);
+                            e.setadusr(adUsr[0]);
+                            startMenuActivity();
+                        }else{
+                            CharSequence text =  "Error! Intente denuevo.";
+                            Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             }
@@ -217,10 +214,10 @@ public class MainActivity extends ActionBarActivity {
             if(res.equals("-2"))
             {
                 Log.d(TAG, "Usuario no registrado o Error en User o Pass.");
-                res = "-2";
+                reg = "-2";
             }else if(res.equals("-1")){
                 Log.d(TAG, "Usuario sin Warehouse.");
-                res = "-1";
+                reg = "-1";
             }else{
                 reg = res;
             }

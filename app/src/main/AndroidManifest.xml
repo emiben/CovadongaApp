@@ -61,6 +61,10 @@
             android:label="@string/title_activity_asociar_bar_code"
             android:windowSoftInputMode="stateHidden|adjustPan" >
         </activity>
+        <activity
+            android:name=".ReportesActivity"
+            android:label="@string/title_activity_reportes" >
+        </activity>
     </application>
 
 </manifest>

@@ -3,6 +3,7 @@ package com.openup.covadonga.covadongaapp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -36,6 +37,7 @@ import android.widget.Toast;
 import com.openup.covadonga.covadongaapp.util.CustomApplication;
 import com.openup.covadonga.covadongaapp.util.DBHelper;
 import com.openup.covadonga.covadongaapp.util.CustomListAdapter;
+import com.openup.covadonga.covadongaapp.util.Env;
 import com.openup.covadonga.covadongaapp.util.Order;
 
 
@@ -188,7 +190,6 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         private ListView    lvProducts;
         private ArrayAdapter<String> adaptador;
         private CustomListAdapter adapter;
-        private EditText    etFilter;
         private Button      scan;
         private Button      guardar;
         private Button      finalizar;
@@ -227,7 +228,6 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                 docID = getShownDoc();
 //            }
             lvProducts = (ListView) rootView.findViewById(R.id.listViewFragment);
-            etFilter = (EditText) rootView.findViewById(R.id.editTextFragBucar);
             scan = (Button) rootView.findViewById(R.id.btnScan);
             guardar = (Button) rootView.findViewById(R.id.btnSave);
             finalizar = (Button) rootView.findViewById(R.id.btnEnd);
@@ -294,33 +294,10 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         }
 
         public void setActions() {
-            etFilter.addTextChangedListener(new TextWatcher() {
-
-                @Override
-                public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
-                    // When user changed the Text
-                    //PlaceholderFragment.this.adaptador.getFilter().filter(cs);
-                    PlaceholderFragment.this.adapter.getFilter().filter(cs);
-                }
-
-                @Override
-                public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-                                              int arg3) {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable arg0) {
-                    // TODO Auto-generated method stub
-                }
-            });
 
             scan.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //startConfirmarCantidadesActivity(7891010775629L);
-                    //startConfirmarCantidadesActivity(0000000000000L);
                     insertUPC();
                 }
             });
@@ -392,18 +369,25 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         public void finalizeOrder(){
             DBHelper db = null;
             int res;
-            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            String date;
 
             String where = " c_order_id = " + ordId;
-            Date date = new Date();
-            dateFormat.format(date);
+            final Calendar c = Calendar.getInstance();
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH);
+            int day = c.get(Calendar.DAY_OF_MONTH);
+            String mon = String.valueOf(month+1);
+            if((month+1) < 10){
+                mon = "0"+mon;
+            }
+            date = year+"-"+mon+"-"+day+" 00:00:00";
 
             try {
                 db = new DBHelper(CustomApplication.getCustomAppContext());
                 db.openDB(1);
                 ContentValues cv = new ContentValues();
                 cv.put("finalizado", "Y");
-                cv.put("fecha", date.toString());
+                cv.put("fecha", date);
 
                 res = db.updateSQL("c_order", cv, where, null);
                 if(res > 0){

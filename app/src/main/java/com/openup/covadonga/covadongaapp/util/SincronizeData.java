@@ -1,5 +1,6 @@
 package com.openup.covadonga.covadongaapp.util;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.widget.Toast;
 
@@ -68,13 +69,13 @@ public class SincronizeData {
             SoapObject resp = new SoapObject();
             ws = new WebServices();
             int i = 0;
-            String qryOrd = "select c_order_id, c_bpartner_id, fecha from c_order where finalizado = 'Y'";
+            String qryOrd = "select c_order_id, c_bpartner_id, fecha, uy_mb_inout_id from c_order where finalizado = 'Y'";
             ordCurs = db.querySQL(qryOrd, null);
             orders = new OrderTo[ordCurs.getCount()];
-            ord = new OrderTo();
             if(ordCurs.moveToFirst()) {
                 do {
-                    ord.setAdClientId(env.getAdUsr());
+                    ord = new OrderTo();
+                    ord.setAdClientId(ordCurs.getString(3));
                     ord.setAdOrgId("1000007");
                     ord.setOrderId(ordCurs.getString(0));
                     ord.setPartnerId(ordCurs.getString(1));
@@ -83,17 +84,61 @@ public class SincronizeData {
                     ord.setDeviceId("dev 1");
                     addOrderLines(ord, ordCurs.getString(0));
                     orders[i] = ord;
+                    i++;
                 } while (ordCurs.moveToNext());
                 ///////llamar al WS pasandole order
                 ws.SoapCallerInOrder(orders);
+                if(ws.getMessage() == "EOFException"){
+                    ws.SoapCallerInOrder(orders);
+                }
                 ////Con la respuesta llamar a la func que elimina los datos de las ordenes
                 resp = ws.getResponse();
+                SoapObject resSoap1 = (SoapObject)resp.getProperty(0);
+                int tam = resSoap1.getPropertyCount();
+                String resArre[] = new String[tam/2];
+                int pos = 0;
+                for (int j=0; j<tam; j++){
+                    String resu = resSoap1.getProperty(j).toString();
+                    if(!resu.equals("UY_OrderRT_ID")){
+                        resArre[pos] = resu;
+                        pos++;
+                    }
+                }
+                separaArre(resArre);
             }
         }catch (Exception e) {
             e.getMessage();
         } finally {
             db.close();
         }
+    }
+
+    private void separaArre(String resArre[]){
+        int tam = resArre.length;
+        int ok=0, err=0;
+        for(int i=0; i<tam; i++){
+            if(resArre[i].startsWith("OK")){
+                ok++;
+            }else{
+                err++;
+            }
+        }
+        String[] okArre = new String[ok];
+        String[] errArre = new String[err];
+        for(int i=0; i<tam; i++){
+            int posOK = 0, posErr=0;
+            if(resArre[i].startsWith("OK")){
+                okArre[posOK] = resArre[i];
+                posOK++;
+            }else{
+                errArre[posErr] = resArre[i];
+                posErr++;
+            }
+        }
+        /////Llamar a las funciones de eliminar y a la de update la de errores
+        delSyncOrders(okArre);
+        insertErrors(errArre);
+
     }
 
     private void addOrderLines(OrderTo ord, String ordId){
@@ -114,10 +159,10 @@ public class SincronizeData {
                     " where l.c_order_id = " + ordId;
             ordLineCurs = db.querySQL(qryOrdLine, null);
             orderLines = new OrderLine[ordLineCurs.getCount()];
-            ordLine = new OrderLine();
             if (ordLineCurs.moveToFirst()) {
                 do {
-                    ordLine.setAdClientId(env.getAdUsr());
+                    ordLine = new OrderLine();
+                    ordLine.setAdClientId("1000006");
                     ordLine.setAdOrgId("1000007");
                     ordLine.setOrderLineId(ordLineCurs.getString(0));
                     ordLine.setOrderId(ordLineCurs.getString(1));
@@ -137,14 +182,16 @@ public class SincronizeData {
         }
     }
 
-    public void delSyncOrders(int[] orders){
+
+    public void delSyncOrders(String[] orders){
         int tam = orders.length;
         int ordId;
         String qryProdId;
 
         for(int i=0; i<tam; i++){
             DBHelper db = null;
-            ordId = orders[i];
+            String[] split = orders[i].split("-");
+            ordId = Integer.valueOf(split[2]);
             qryProdId = "select distinct m_product_id from c_orderline where c_order_id = " + ordId;
 
             try{
@@ -163,9 +210,36 @@ public class SincronizeData {
 
                     } while (rsProds.moveToNext());
                 }
+                int resuRep = db.deleteSQL("reports", whereOrd, null);
                 int resuFac = db.deleteSQL("factura", whereOrd, null);
                 int resuOL = db.deleteSQL("c_orderline", whereOrd, null);
                 int resuOrd = db.deleteSQL("c_order", whereOrd, null);
+
+
+            }catch (Exception e) {
+                e.getMessage();
+            } finally {
+                db.close();
+            }
+        }
+    }
+
+    public void insertErrors(String[] errors){
+        int tam = errors.length;
+
+        for(int i=0; i<tam; i++){
+            DBHelper db = null;
+            String[] split = errors[i].split("-");
+            String qry = "insert into reports values ("+split[2]+",'"+split[0]+"','"+split[1]+"')";
+            String qryWhere = " c_order_id = " + split[2];
+            ContentValues cv = new ContentValues();
+            cv.put("uy_mb_inout_id", split[3]);
+
+            try{
+                db = new DBHelper(CustomApplication.getCustomAppContext());
+                db.openDB(1);
+                db.executeSQL(qry);
+                db.updateSQL("c_order", cv, qryWhere, null);
 
             }catch (Exception e) {
                 e.getMessage();

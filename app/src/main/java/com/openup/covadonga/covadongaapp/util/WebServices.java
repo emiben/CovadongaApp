@@ -24,7 +24,7 @@ public class WebServices {
     private final String NAMESPACE = "http://3e.pl/ADInterface";
     private final String NAMESPACE_ORD = "http://www.erpconsultoresyasociados.com";
     private final String URL = "http://covadonga.dyndns.org:8273/ADInterface-1.0/services/ModelADService";
-    private final String URL_ORD = "http://covadonga.dyndns.org:8273/ADInterface-1.0/services/AppDroidServices?wsdl";
+    private final String URL_ORD = "http://covadonga.dyndns.org:8273/ADInterface-1.0/services/AppDroidServices";
     private final String METHOD_NAME = "queryData";
     private final String METHOD_NAME_ORD = "InOrderRT";
     private final String SOAP_ACTION = "http://3e.pl/ADInterface/ModelADServicePortType/queryDataRequest";
@@ -45,10 +45,9 @@ public class WebServices {
 
     public SoapObject webServiceQry(String method, String table, String[] ColumYVal){
 
+        Env env = new Env();
         SoapObject resultado_xml = null;
-
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
-
         SoapObject ModelCRUDRequest = new SoapObject(NAMESPACE, "ModelCRUDRequest");
         SoapObject ModelCRUD = new SoapObject(NAMESPACE, "ModelCRUD");
 
@@ -107,13 +106,13 @@ public class WebServices {
         SoapObject ADLoginRequest = new SoapObject(NAMESPACE, "ADLoginRequest");
         PropertyInfo usrPI = new PropertyInfo();
         usrPI.setName("user");
-        usrPI.setValue("mobileuser");
+        usrPI.setValue(env.getUser());
         usrPI.setNamespace(NAMESPACE);
         usrPI.setType(String.class);
         ADLoginRequest.addProperty(usrPI);
         PropertyInfo pswPI = new PropertyInfo();
         pswPI.setName("pass");
-        pswPI.setValue("mobileuser");
+        pswPI.setValue(env.getPass());
         pswPI.setNamespace(NAMESPACE);
         pswPI.setType(String.class);
         ADLoginRequest.addProperty(pswPI);
@@ -172,7 +171,9 @@ public class WebServices {
                 resultado_xml = (SoapObject) envelope.getResponse();
             }
             transporte.reset();
-        } catch (Exception e) {
+        }catch (EOFException e1){
+            mensajeWS = "EOFException";
+        }catch (Exception e) {
             mensajeWS = "Error!!";
             e.getMessage();
             //Log.d(TAG, "Error registro en mi servidor: " + e.getCause() + " || " + e.getMessage());
@@ -182,8 +183,8 @@ public class WebServices {
 
     public void webServiceIns(String method, String table, String[] ColumYVal) {
 
+        Env env = new Env();
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_INSERT);
-
         SoapObject ModelCRUDRequest = new SoapObject(NAMESPACE, "ModelCRUDRequest");
         SoapObject ModelCRUD = new SoapObject(NAMESPACE, "ModelCRUD");
 
@@ -241,13 +242,13 @@ public class WebServices {
         SoapObject ADLoginRequest = new SoapObject(NAMESPACE, "ADLoginRequest");
         PropertyInfo usrPI = new PropertyInfo();
         usrPI.setName("user");
-        usrPI.setValue("mobileuser");
+        usrPI.setValue(env.getUser());
         usrPI.setNamespace(NAMESPACE);
         usrPI.setType(String.class);
         ADLoginRequest.addProperty(usrPI);
         PropertyInfo pswPI = new PropertyInfo();
         pswPI.setName("pass");
-        pswPI.setValue("mobileuser");
+        pswPI.setValue(env.getPass());
         pswPI.setNamespace(NAMESPACE);
         pswPI.setType(String.class);
         ADLoginRequest.addProperty(pswPI);
@@ -321,7 +322,7 @@ public class WebServices {
     public void SoapCallerInOrder(OrderTo[] m_orders){
         HttpClient httpClient = new DefaultHttpClient();
         HttpPost httpPost = new HttpPost(URL_ORD);
-
+        Env env = new Env();
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         envelope.encodingStyle = SoapSerializationEnvelope.ENC;
 
@@ -332,14 +333,14 @@ public class WebServices {
 
         PropertyInfo usrPI= new PropertyInfo();
         usrPI.setName("UserRT");
-        usrPI.setValue("mobileuser");
+        usrPI.setValue(env.getUser());
         usrPI.setNamespace(_METHOD_NAME_DOS);
         usrPI.setType(String.class);
         inOrder.addProperty(usrPI);
         //inOrder.addProperty("User",user.getName());
         PropertyInfo pswPI= new PropertyInfo();
         pswPI.setName("PassWordRT");
-        pswPI.setValue("mobileuser");
+        pswPI.setValue(env.getPass());
         pswPI.setNamespace(_METHOD_NAME_DOS);
         pswPI.setType(String.class);
         inOrder.addProperty(pswPI);

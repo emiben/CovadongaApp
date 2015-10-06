@@ -23,7 +23,6 @@ import com.openup.covadonga.covadongaapp.util.DBHelper;
 
 public class ListaOrdenesActivity extends ActionBarActivity {
 
-    private EditText    etFilter;
     private ListView    lvOrders;
     private Button      btnBack;
     private Button      btnOK;
@@ -67,34 +66,12 @@ public class ListaOrdenesActivity extends ActionBarActivity {
     }
 
     public void getViewElements(){
-        etFilter = (EditText) findViewById(R.id.editTextOrder);
         lvOrders = (ListView) findViewById(R.id.listViewOrders);
         btnBack = (Button) findViewById(R.id.btnBackOrd);
         btnOK = (Button) findViewById(R.id.btnOkOrd);
     }
 
     public void setActions(){
-
-        etFilter.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
-                // When user changed the Text
-                ListaOrdenesActivity.this.adaptador.getFilter().filter(cs);
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-                                          int arg3) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
 
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,11 +140,16 @@ public class ListaOrdenesActivity extends ActionBarActivity {
                         checkedItems.keyAt(j)).toString() + ";";
                 //Log.i(TAG,item + " was selected");
                 b.putString("Ordenes", item);
+                b.putString("Prov", prov[0]);
             }
         }
         i.putExtras(b);
-        this.finish();
-        startActivity(i);
+        if(!i.hasExtra("Ordenes")){
+            Toast.makeText(getApplicationContext(), "Por Favor elija una Orden!", Toast.LENGTH_SHORT).show();
+        }else {
+            this.finish();
+            startActivity(i);
+        }
     }
 
     public void getPrveedor() {

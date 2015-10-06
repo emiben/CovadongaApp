@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.openup.covadonga.covadongaapp.util.DBHelper;
 import com.openup.covadonga.covadongaapp.util.SincronizeData;
@@ -22,6 +23,7 @@ public class MenuActivity extends ActionBarActivity {
     private Button          btnSincProv;
     private Button          btnSincUPC;
     private Button          btnSincOrders;
+    private Button          btnReport;
     private ProgressDialog  pDialog;
 
     @Override
@@ -60,6 +62,7 @@ public class MenuActivity extends ActionBarActivity {
         btnSincProv = (Button) findViewById(R.id.btnSincProv);
         btnSincUPC = (Button) findViewById(R.id.btnSincUPC);
         btnSincOrders = (Button) findViewById(R.id.btnSincOrders);
+        btnReport = (Button) findViewById(R.id.btnReports);
     }
 
     public void setActions(){
@@ -73,7 +76,7 @@ public class MenuActivity extends ActionBarActivity {
         btnSincProv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sincronizarWS();
+                sincronizarProv();
             }
         });
 
@@ -91,6 +94,13 @@ public class MenuActivity extends ActionBarActivity {
             }
         });
 
+        btnReport.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startReportsActivity();
+            }
+        });
+
     }
 
     private void startListaClienteActivity() {
@@ -98,7 +108,12 @@ public class MenuActivity extends ActionBarActivity {
         startActivity(i);
     }
 
-    public void sincronizarWS() {
+    private void startReportsActivity() {
+        Intent i = new Intent(this, ReportesActivity.class);
+        startActivity(i);
+    }
+
+    public void sincronizarProv() {
         pDialog = ProgressDialog.show(this, null, "Consultando datos...", true);
         new Thread() {
             public void run() {
@@ -106,6 +121,8 @@ public class MenuActivity extends ActionBarActivity {
                     sincronizar();
                 } catch (Exception e) {
                     e.getMessage();
+                    Toast.makeText(getApplicationContext(),
+                            "Error! Por favor intente nuevamente. Desc: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
                 pDialog.dismiss();
             }
@@ -121,6 +138,8 @@ public class MenuActivity extends ActionBarActivity {
                     sd.sendUPC();
                 } catch (Exception e) {
                     e.getMessage();
+                    Toast.makeText(getApplicationContext(),
+                            "Error! Por favor intente nuevamente. Desc: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
                 pDialog.dismiss();
             }
@@ -140,8 +159,14 @@ public class MenuActivity extends ActionBarActivity {
         columYVal[i++] = "Y"; //val
 
         resultado_xml = ws.webServiceQry("QueryCBPartner", "C_BPartner", columYVal);
-        insertVendors(resultado_xml);
-
+        if(ws.getMessage() == "EOFException"){
+            resultado_xml = ws.webServiceQry("QueryCBPartner", "C_BPartner", columYVal);
+        }else if(ws.getMessage() == "Error!!"){
+            Toast.makeText(getApplicationContext(),
+                    "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
+        }else{
+            insertVendors(resultado_xml);
+        }
     }
 
     private void insertVendors(SoapObject so){
