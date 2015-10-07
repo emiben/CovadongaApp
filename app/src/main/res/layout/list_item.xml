@@ -22,7 +22,6 @@
         android:textAlignment="gravity"
         android:id="@+id/cantFact"
         android:width="60dp"
-        android:layout_gravity="left|right"
         android:gravity="right" />
 
     <TextView

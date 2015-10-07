@@ -103,6 +103,13 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
                 asociateBarCode();
             }
         });
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     public void getOrderId() {

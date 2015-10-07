@@ -34,7 +34,7 @@
                 android:layout_gravity="center_horizontal"
                 android:textSize="20dp"
                 android:textStyle="bold"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="5dp" />
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -67,9 +67,9 @@
 
             <ListView
                 android:layout_width="match_parent"
-                android:layout_height="230dp"
+                android:layout_height="210dp"
                 android:id="@+id/listViewProd"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="5dp" />
 
             <LinearLayout
                 android:orientation="horizontal"

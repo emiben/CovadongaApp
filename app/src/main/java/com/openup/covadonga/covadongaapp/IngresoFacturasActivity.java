@@ -156,6 +156,9 @@ public class IngresoFacturasActivity extends ActionBarActivity {
             if(Integer.valueOf(parsFecha[1]) < 10){
                 parsFecha[1] = "0"+parsFecha[1];
             }
+            if(Integer.valueOf(parsFecha[0]) < 10){
+                parsFecha[0] = "0"+parsFecha[0];
+            }
             String fecha = parsFecha[2] + "-" + parsFecha[1] + "-" + parsFecha[0] + " 00:00:00";
 
             try{

@@ -63,7 +63,8 @@
         </activity>
         <activity
             android:name=".ReportesActivity"
-            android:label="@string/title_activity_reportes" >
+            android:label="@string/title_activity_reportes"
+            android:windowSoftInputMode="stateHidden|adjustPan" >
         </activity>
     </application>
 

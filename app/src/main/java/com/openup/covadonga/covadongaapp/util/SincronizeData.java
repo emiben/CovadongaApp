@@ -202,7 +202,7 @@ public class SincronizeData {
                 String whereOrd = " c_order_id = " + ordId;
                 if(rsProds.moveToFirst()) {
                     do {
-                        whereProd = "where m_product_id = "+ rsProds.getInt(0) +" and m_product_id not in" +
+                        whereProd = " m_product_id = "+ rsProds.getInt(0) +" and m_product_id not in" +
                         " (select distinct m_product_id from c_orderline where c_order_id <> "+ ordId +")";
 
                         int resuUpc = db.deleteSQL("uy_productupc", whereProd, null);

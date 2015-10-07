@@ -421,11 +421,15 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             int year = c.get(Calendar.YEAR);
             int month = c.get(Calendar.MONTH);
             int day = c.get(Calendar.DAY_OF_MONTH);
-            String mon = String.valueOf(month+1);
+            String mon = String.valueOf(month + 1);
+            String dai = String.valueOf(day);
             if((month+1) < 10){
                 mon = "0"+mon;
             }
-            date = year+"-"+mon+"-"+day+" 00:00:00";
+            if(day < 10){
+                dai = "0"+dai;
+            }
+            date = year+"-"+mon+"-"+dai+" 00:00:00";
 
             try {
                 db = new DBHelper(CustomApplication.getCustomAppContext());
