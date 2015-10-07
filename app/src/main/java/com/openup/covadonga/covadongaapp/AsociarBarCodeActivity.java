@@ -112,7 +112,8 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
         Bundle b = in.getExtras();
         if (null != b) {
             ordId = b.getInt("c_order_id");
-            barCode = Long.toString(b.getLong("barCode"));
+            barCode = String.valueOf(b.getLong("barcode"));
+            //barCode = b.getString("barcode");
         }
     }
 

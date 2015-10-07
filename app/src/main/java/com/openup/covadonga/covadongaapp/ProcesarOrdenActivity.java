@@ -7,9 +7,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -32,6 +35,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openup.covadonga.covadongaapp.util.CustomApplication;
@@ -188,14 +192,23 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         private static final String ARG_SECTION_NUMBER = "section_number";
 
         private ListView    lvProducts;
-        private ArrayAdapter<String> adaptador;
         private CustomListAdapter adapter;
         private Button      scan;
-        private Button      guardar;
         private Button      finalizar;
         private int         docID;
         private int         ordId;
         private long        barCode;
+
+        //Scan de ordenes
+        //send by BarcodeService
+        public static final String ACTION_BARCODE_SERVICE_BROADCAST = "action_barcode_broadcast";
+        private BroadcastReceiver mReceiver = new BarcodeReceiver();
+        //send by the BarcodeService
+        public static final String KEY_BARCODE_STR = "key_barcode_string";
+        private String strBarcode = "";
+        public static final String KEY_ACTION = "KEY_ACTION";
+        public static final String TONE = "TONE=100";
+        private Intent intentService = new Intent("com.hyipc.core.service.barcode.BarcodeService2D");
 
         /**
          * Returns a new instance of this fragment for the given section
@@ -229,8 +242,11 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
 //            }
             lvProducts = (ListView) rootView.findViewById(R.id.listViewFragment);
             scan = (Button) rootView.findViewById(R.id.btnScan);
-            guardar = (Button) rootView.findViewById(R.id.btnSave);
             finalizar = (Button) rootView.findViewById(R.id.btnEnd);
+
+            //Scan de ordenes
+            intentService.putExtra(KEY_ACTION, TONE);
+            getActivity().startService(intentService);
 
             setActions();
             loadProducts();
@@ -242,9 +258,28 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         public void onResume()
         {
             super.onResume();
+
+            //Scan de ordenes
+            intentService.putExtra(KEY_ACTION, "INIT");
+            getActivity().startService(intentService);
+            // register receiver
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ACTION_BARCODE_SERVICE_BROADCAST);
+            getActivity().registerReceiver(mReceiver, filter);
+
             loadProducts();
         }
 
+        //Scan de ordenes
+        public class BarcodeReceiver extends BroadcastReceiver {
+            public void onReceive(Context ctx, Intent intent) {
+                if (intent.getAction().equals(ACTION_BARCODE_SERVICE_BROADCAST)) {
+                    strBarcode = intent.getExtras().getString(KEY_BARCODE_STR);
+                    //strBarcode = "";
+                    insertUPCPDA();
+                }
+            }
+        }
 
 
         public void loadProducts(){
@@ -298,16 +333,22 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             scan.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    insertUPC();
+                    //insertUPC();
+                    //Scan de ordenes
+                    intentService.putExtra(KEY_ACTION, "UP");
+                    getActivity().startService(intentService);
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    intentService.putExtra(KEY_ACTION, "DOWN");
+                    getActivity().startService(intentService);
+
+                    //insertUPCPDA();
                 }
             });
 
-            guardar.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    getActivity().finish();
-                }
-            });
 
             finalizar.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -356,6 +397,11 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             alert11.show();
         }
 
+        public void insertUPCPDA(){
+            Long bc = Long.valueOf(strBarcode);
+            startConfirmarCantidadesActivity(bc);
+        }
+
 
         public void startConfirmarCantidadesActivity(long barCode){
             Intent i = new Intent(getActivity().getBaseContext(), ConfirmarCantidadesActivity.class);
@@ -370,7 +416,6 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             DBHelper db = null;
             int res;
             String date;
-
             String where = " c_order_id = " + ordId;
             final Calendar c = Calendar.getInstance();
             int year = c.get(Calendar.YEAR);

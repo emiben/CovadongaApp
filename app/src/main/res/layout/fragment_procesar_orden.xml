@@ -25,7 +25,7 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginLeft="15dp">
 
                 <TextView
@@ -35,7 +35,7 @@
                     android:text="@string/txtProducts"
                     android:textStyle="bold"
                     android:id="@+id/textProdu"
-                    android:width="210dp" />
+                    android:width="170dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -58,39 +58,10 @@
 
             <ListView
                 android:layout_width="match_parent"
-                android:layout_height="275dp"
+                android:layout_height="220dp"
                 android:id="@+id/listViewFragment"
                 android:layout_marginTop="10dp"
                 android:layout_weight="5" />
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:weightSum="100">
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/txtCancell"
-                    android:background="@drawable/button_customize"
-                    android:textColor="#FFFFFF"
-                    android:id="@+id/btnCancel"
-                    android:layout_weight="45"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="7dp" />
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/txtScan"
-                    android:background="@drawable/button_customize"
-                    android:textColor="#FFFFFF"
-                    android:id="@+id/btnScan"
-                    android:layout_marginLeft="7dp"
-                    android:layout_weight="45" />
-            </LinearLayout>
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -102,23 +73,22 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/txtSave"
-                    android:background="@drawable/button_customize"
-                    android:textColor="#FFFFFF"
-                    android:id="@+id/btnSave"
-                    android:layout_weight="45"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="7dp" />
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:text="@string/txtEnd"
                     android:background="@drawable/button_customize"
                     android:textColor="#FFFFFF"
                     android:layout_weight="45"
                     android:id="@+id/btnEnd"
                     android:layout_marginLeft="7dp" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/txtScan"
+                    android:background="@drawable/button_customize"
+                    android:textColor="#FFFFFF"
+                    android:id="@+id/btnScan"
+                    android:layout_marginLeft="7dp"
+                    android:layout_weight="45" />
             </LinearLayout>
 
         </LinearLayout>

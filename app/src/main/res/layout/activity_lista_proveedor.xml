@@ -32,9 +32,9 @@
                 android:text="@string/txtChoseSupplier"
                 android:id="@+id/textView"
                 android:layout_gravity="center_horizontal"
-                android:textSize="40dp"
+                android:textSize="23dp"
                 android:textStyle="bold"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="3dp" />
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -42,13 +42,13 @@
                 android:src="@drawable/separator"
                 android:id="@+id/imageSeparator2"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="5dp" />
+                android:layout_marginTop="3dp" />
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp">
+                android:layout_marginTop="2dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -68,7 +68,8 @@
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -76,30 +77,28 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/txtProcess"
                     android:id="@+id/textViewProcess"
-                    android:textStyle="bold"
-                    android:layout_marginTop="5dp" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:id="@+id/textViewEmp"
-                    android:layout_marginLeft="7dp"
-                    android:layout_marginTop="5dp" />
+                    android:layout_marginLeft="7dp" />
             </LinearLayout>
 
             <ListView
                 android:layout_width="match_parent"
-                android:layout_height="267dp"
+                android:layout_height="185dp"
                 android:id="@+id/listViewClientes"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="3dp" />
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:weightSum="100"
-                android:layout_marginTop="5dp">
+                android:layout_marginTop="3dp">
 
                 <Button
                     android:layout_width="wrap_content"

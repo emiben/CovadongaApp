@@ -32,9 +32,9 @@
                 android:text="@string/txtMenu"
                 android:id="@+id/textViewMenu"
                 android:layout_gravity="center_horizontal"
-                android:textSize="40dp"
+                android:textSize="30dp"
                 android:textStyle="bold"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="5dp" />
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -51,7 +51,7 @@
                 android:id="@+id/btnProcessPO"
                 android:background="@drawable/button_customize"
                 android:textColor="#FFFFFF"
-                android:layout_marginTop="50dp" />
+                android:layout_marginTop="20dp" />
 
             <Button
                 android:layout_width="match_parent"

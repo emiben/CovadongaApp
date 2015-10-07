@@ -43,7 +43,7 @@ public class OrderListAdapter extends BaseAdapter {
             convertView = mInflater.inflate(R.layout.row_orders, null);
             holder = new ViewHolder();
             holder.txtDesc = (TextView) convertView.findViewById(R.id.textViewDesc);
-            holder.txtOrden = (TextView) convertView.findViewById(R.id.textViewOrden);
+            //holder.txtOrden = (TextView) convertView.findViewById(R.id.textViewOrden);
             holder.txtFact = (TextView) convertView.findViewById(R.id.textViewFact);
             holder.txtRecibido = (TextView) convertView.findViewById(R.id.textViewRecibido);
 
@@ -53,7 +53,7 @@ public class OrderListAdapter extends BaseAdapter {
         }
 
         holder.txtDesc.setText(searchArrayList.get(position).getCodigoDesc());
-        holder.txtOrden.setText(Double.toString(searchArrayList.get(position).getCantOrdenada()));
+        //holder.txtOrden.setText(Double.toString(searchArrayList.get(position).getCantOrdenada()));
         holder.txtFact.setText(Double.toString(searchArrayList.get(position).getCantFactura()));
         holder.txtRecibido.setText(Double.toString(searchArrayList.get(position).getCantRecibida()));
 
@@ -62,7 +62,7 @@ public class OrderListAdapter extends BaseAdapter {
 
     static class ViewHolder {
         TextView txtDesc;
-        TextView txtOrden;
+        //TextView txtOrden;
         TextView txtFact;
         TextView txtRecibido;
     }

@@ -32,9 +32,9 @@
                 android:text="@string/txtReports"
                 android:id="@+id/textView"
                 android:layout_gravity="center_horizontal"
-                android:textSize="40dp"
+                android:textSize="28dp"
                 android:textStyle="bold"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="3dp" />
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -42,13 +42,13 @@
                 android:src="@drawable/separator"
                 android:id="@+id/imageSeparator2"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="5dp" />
+                android:layout_marginTop="3dp" />
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp">
+                android:layout_marginTop="3dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -67,9 +67,9 @@
 
             <ListView
                 android:layout_width="match_parent"
-                android:layout_height="267dp"
+                android:layout_height="230dp"
                 android:id="@+id/listViewOrdRep"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="5dp" />
 
             <LinearLayout
                 android:orientation="horizontal"
