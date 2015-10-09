@@ -10,6 +10,9 @@ import android.widget.TextView;
 
 import com.openup.covadonga.covadongaapp.R;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,10 +44,14 @@ public class CustomListAdapter extends ArrayAdapter<Order> {
         // Populate the data into the template view using the data object
         prod.setText(order.getCodigoDesc());
         double Fact = order.getCantFactura();
+        BigDecimal Factu = new BigDecimal(Fact).setScale(1, RoundingMode.HALF_UP);
+        //cantFact.setText(Double.toString(Fact));
+        cantFact.setText(Factu.toString());
 
-        cantFact.setText(Double.toString(Fact));
         double Entregado = order.getCantRecibida();
-        cantEntregado.setText(Double.toString(Entregado));
+        BigDecimal Entre = new BigDecimal(Entregado).setScale(1, RoundingMode.HALF_UP);
+        //cantEntregado.setText(Double.toString(Entregado));
+        cantEntregado.setText(Entre.toString());
         // Return the completed view to render on screen
         return convertView;
     }
