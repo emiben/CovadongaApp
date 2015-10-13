@@ -21,6 +21,9 @@
     <string name="txtSyncUPC">Enviar nuevos UPC</string>
     <string name="txtSyncOrders">Enviar Ordenes Finalizadas</string>
     <string name="txtReport">Reportes</string>
+    <string name="txtWPO">Con Orden de Compra</string>
+    <string name="txtWoPO">Sin Orden de Compra</string>
+
 
     <!-- Lista Orden-->
     <string name="txtChoseOrder">Elija las Ordenes</string>

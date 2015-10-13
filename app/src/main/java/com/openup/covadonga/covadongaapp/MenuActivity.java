@@ -1,9 +1,13 @@
 package com.openup.covadonga.covadongaapp;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -66,10 +70,27 @@ public class MenuActivity extends ActionBarActivity {
     }
 
     public void setActions(){
+        final Context ctx = this;
         btnProcessPO.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startListaClienteActivity();
+                //startListaClienteActivity();
+                AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+                    // Add the buttons
+                builder.setTitle("Recepcion con Orden de Compra?");
+                builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User clicked OK button
+                        startListaClienteActivity();
+                    }
+                });
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
         });
 
@@ -186,13 +207,14 @@ public class MenuActivity extends ActionBarActivity {
                     SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
                     String col1[] = dataRow.getProperty(0).toString().split(delims); //C_BPartner_ID--
                     String col2[] = dataRow.getProperty(1).toString().split(delims); //Created--
-                    String col3[] = dataRow.getProperty(2).toString().split(delims); //Name--
-                    String col4[] = dataRow.getProperty(3).toString().split(delims); //Name2--
-                    String col5[] = dataRow.getProperty(4).toString().split(delims); //Updated--
+                    String col3[] = dataRow.getProperty(2).toString().split(delims); //IsRecieptPO
+                    String col4[] = dataRow.getProperty(3).toString().split(delims); //Name
+                    String col5[] = dataRow.getProperty(4).toString().split(delims); //Name2
+                    String col6[] = dataRow.getProperty(5).toString().split(delims); //Updated
 
                     String qry = "Insert into c_bpartner values (";
-                    qry = qry + col1[1] + ",'" + col2[1] + "','" + col5[1] + "','";
-                    qry = qry + col3[1] + "','" + col4[1] + "'" +")";
+                    qry = qry + col1[1] + ",'" + col2[1] + "','" + col3[1] + "','" + col6[1] + "','";
+                    qry = qry + col4[1] + "','" + col5[1] + "'" +")";
 
                     db.executeSQL(qry);
                 }
