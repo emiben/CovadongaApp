@@ -35,6 +35,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
     private Button      btnOK;
     private TextView    tvEmpresa;
     private ProgressDialog  pDialog;
+    private int         recType; // 0 con orden, 1 sin orden
     // Listview Adapter
     private ArrayAdapter<String> adaptador;
 
@@ -44,6 +45,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
         setContentView(R.layout.activity_lista_proveedor);
 
         getViewElements();
+        getBundleData();
         loadClients();
         setActions();
     }
@@ -70,6 +72,12 @@ public class ListaProveedorActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void getBundleData() {
+        Intent in = getIntent();
+        Bundle b = in.getExtras();
+        recType = b.getInt("recType");
+    }
+
     public void getViewElements(){
         etFilter = (EditText) findViewById(R.id.editTextFilter);
         lvProv = (ListView) findViewById(R.id.listViewClientes);
@@ -80,7 +88,13 @@ public class ListaProveedorActivity extends ActionBarActivity {
 
     public void loadClients(){
         DBHelper db = null;
-        String qry = "Select name from c_bpartner";
+        String qry;
+
+        if(recType == 0){
+            qry = "Select name from c_bpartner";
+        }else{
+            qry = "Select name from c_bpartner where isrecieptpo = 'Y'";
+        }
 
         try {
             db = new DBHelper(getApplicationContext());
@@ -433,5 +447,33 @@ public class ListaProveedorActivity extends ActionBarActivity {
         }finally {
             db.close();
         }
+    }
+
+    private void getPriceList(){
+        int orderId = 1;
+        int documentno = 1;
+        int provID = getProvId();
+        DBHelper db = null;
+        String qry1 = "select max(c_order_id), max(documentno) from c_order where c_order_id < 1000000";
+
+        try {
+            db = new DBHelper(getApplicationContext());
+            db.openDB(1);
+            Cursor rs = db.querySQL(qry1, null);
+            if(rs.moveToFirst()){
+                orderId = orderId + rs.getInt(0);
+                documentno = documentno + rs.getInt(1);
+            }
+
+            String qry = "Insert into c_order values ("+orderId+","+documentno+","+provID+",'N','',0)";
+            db.executeSQL(qry);
+
+
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+
     }
 }

@@ -80,13 +80,12 @@ public class MenuActivity extends ActionBarActivity {
                 builder.setTitle("Recepcion con Orden de Compra?");
                 builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // User clicked OK button
-                        startListaClienteActivity();
+                        startListaClienteActivity(0);
                     }
                 });
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
+                        startListaClienteActivity(1);
                     }
                 });
                 AlertDialog dialog = builder.create();
@@ -124,8 +123,11 @@ public class MenuActivity extends ActionBarActivity {
 
     }
 
-    private void startListaClienteActivity() {
+    private void startListaClienteActivity(int recType) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("recType", recType);
         Intent i = new Intent(this, ListaProveedorActivity.class);
+        i.putExtras(bundle);
         startActivity(i);
     }
 
@@ -205,16 +207,20 @@ public class MenuActivity extends ActionBarActivity {
             if(tam > 0) {
                 for (int i = 0; i < tam; i++) {
                     SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
-                    String col1[] = dataRow.getProperty(0).toString().split(delims); //C_BPartner_ID--
-                    String col2[] = dataRow.getProperty(1).toString().split(delims); //Created--
-                    String col3[] = dataRow.getProperty(2).toString().split(delims); //IsRecieptPO
-                    String col4[] = dataRow.getProperty(3).toString().split(delims); //Name
-                    String col5[] = dataRow.getProperty(4).toString().split(delims); //Name2
-                    String col6[] = dataRow.getProperty(5).toString().split(delims); //Updated
+                    String col1[] = dataRow.getProperty(0).toString().split(delims); //C_BPartner_ID
+                    String col2[] = dataRow.getProperty(1).toString().split(delims); //Created
+                    String col3[] = dataRow.getProperty(2).toString().split(delims); //IsRecieptPO--
+                    String col4[] = dataRow.getProperty(3).toString().split(delims); //m_pricelist_id--
+                    String col5[] = dataRow.getProperty(4).toString().split(delims); //Name
+                    String col6[] = dataRow.getProperty(5).toString().split(delims); //Name2
+                    String col7[] = dataRow.getProperty(6).toString().split(delims); //Updated
 
+                    if(col4[1].toString().equals("null")){
+                        col4[1] = String.valueOf(0);
+                    }
                     String qry = "Insert into c_bpartner values (";
-                    qry = qry + col1[1] + ",'" + col2[1] + "','" + col3[1] + "','" + col6[1] + "','";
-                    qry = qry + col4[1] + "','" + col5[1] + "'" +")";
+                    qry = qry + col4[1] + ",'" + col3[1] + "'," + col1[1] + ",'" + col2[1] + "','" + col7[1] + "','";
+                    qry = qry + col5[1] + "','" + col6[1] +"')";
 
                     db.executeSQL(qry);
                 }
