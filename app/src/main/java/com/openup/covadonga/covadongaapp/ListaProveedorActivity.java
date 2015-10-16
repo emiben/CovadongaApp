@@ -347,13 +347,17 @@ public class ListaProveedorActivity extends ActionBarActivity {
         String[] columYVal = new String[4];
         SoapObject resultado_xml = null;
         SoapObject resultado_xml2 = null;
-
+        Cursor rs = null;
 
         DBHelper db = new DBHelper(this);
         db.openDB(1);
-        //db.executeSQL("DELETE FROM uy_productupc where m_product_id in (select m_product_id FROM M_Product where borrar = 'Y')");
-        //db.executeSQL("DELETE FROM M_Product where borrar = 'Y'");
-        Cursor rs = db.querySQL("select m_product_id from c_orderline", null);
+
+        if(recType == 0){
+            rs = db.querySQL("select m_product_id from c_orderline", null);
+        }else {
+            rs = db.querySQL("select m_product_id from priceListProducts where c_bpartner_id = " + getProvId(), null);
+        }
+
 
         if(rs.moveToFirst()){
             do{
@@ -449,12 +453,16 @@ public class ListaProveedorActivity extends ActionBarActivity {
         }
     }
 
-    private void getPriceList(){
+    private void getNonOrderProvData(){
         int orderId = 1;
         int documentno = 1;
         int provID = getProvId();
+        int priceListVersion = getPriceListVersion(provID);
         DBHelper db = null;
         String qry1 = "select max(c_order_id), max(documentno) from c_order where c_order_id < 1000000";
+
+        insertPLVProds(priceListVersion, provID);
+        insertProds();
 
         try {
             db = new DBHelper(getApplicationContext());
@@ -468,12 +476,96 @@ public class ListaProveedorActivity extends ActionBarActivity {
             String qry = "Insert into c_order values ("+orderId+","+documentno+","+provID+",'N','',0)";
             db.executeSQL(qry);
 
-
         }catch (Exception e) {
             e.getMessage();
         } finally {
             db.close();
         }
 
+    }
+
+    private void insertPLVProds(int pLV, int provID){
+        WebServices ws = new WebServices();
+        String[] columYVal = new String[2];
+        SoapObject resultado_xml = null;
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+
+        int i = 0;
+        columYVal[i++] = "M_PriceList_Version_ID"; //colum
+        columYVal[i++] = String.valueOf(pLV); //val
+
+        resultado_xml = ws.webServiceQry("getPLVProducts", "M_ProductPrice", columYVal);
+        if(ws.getMessage() == "EOFException"){
+            resultado_xml = ws.webServiceQry("getPLVProducts", "M_ProductPrice", columYVal);
+        }else if(ws.getMessage() == "Error!!"){
+            Toast.makeText(getApplicationContext(),
+                    "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
+        }else{
+            insertPLVProds(resultado_xml, pLV, provID);
+        }
+    }
+
+    private void insertPLVProds(SoapObject so, int pLV, int provID){
+
+        SoapObject dataResult = (SoapObject)so.getProperty(0);
+
+        int tam = dataResult.getPropertyCount();
+        String delims = "[=;]";
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+
+        try{
+            if(tam > 0) {
+                for (int i = 0; i < tam; i++) {
+                    SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
+                    String col1[] = dataRow.getProperty(0).toString().split(delims); //Description
+
+                    String qry = "Insert into priceListProducts values ("+provID+","+pLV+","+col1[1]+")";
+
+                    db.executeSQL(qry);
+                }
+            }
+        } catch (Exception e){
+            System.out.print(e);
+        }finally {
+            db.close();
+        }
+    }
+
+
+    private int getPriceListVersion(int provID){
+        WebServices ws = new WebServices();
+        String[] columYVal = new String[2];
+        SoapObject resultado_xml = null;
+        int plv = 0;
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(0);
+        Cursor rs = db.querySQL("select m_pricelist_id from c_bpartner where c_bpartner_id = " + provID, null);
+
+        if(rs.moveToFirst()){
+            int i = 0;
+            columYVal[i++] = "M_PriceList_ID"; //colum
+            columYVal[i++] = String.valueOf(rs.getInt(0)); //val
+
+            resultado_xml = ws.webServiceQryPLV("getPLVersion", columYVal);
+            if(ws.getMessage() == "EOFException"){
+                resultado_xml = ws.webServiceQryPLV("getPLVersion", columYVal);
+            }else if(ws.getMessage() == "Error!!"){
+                Toast.makeText(getApplicationContext(),
+                        "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
+            }else{
+                SoapObject dataResult = (SoapObject)resultado_xml.getProperty(0);
+                String delims = "[=;]";
+
+                SoapObject dataRow = (SoapObject) dataResult.getProperty(0);
+                String col1[] = dataRow.getProperty(0).toString().split(delims); //Description
+                plv = Integer.valueOf(col1[1]);
+            }
+        }
+        return plv;
     }
 }
