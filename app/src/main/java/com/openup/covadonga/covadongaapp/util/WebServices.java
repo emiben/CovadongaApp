@@ -23,10 +23,17 @@ public class WebServices {
     private Object respuesta;
     private final String NAMESPACE = "http://3e.pl/ADInterface";
     private final String NAMESPACE_ORD = "http://www.erpconsultoresyasociados.com";
+
+    //En OpUp
     //private final String URL = "http://covadonga.dyndns.org:8273/ADInterface-1.0/services/ModelADService";
-    private final String URL = "http://10.0.0.254:8273/ADInterface-1.0/services/ModelADService";
     //private final String URL_ORD = "http://covadonga.dyndns.org:8273/ADInterface-1.0/services/AppDroidServices";
-    private final String URL_ORD = "http://10.0.0.254:8273/ADInterface-1.0/services/AppDroidServices";
+    //En covadonga
+    //private final String URL = "http://10.0.0.254:8273/ADInterface-1.0/services/ModelADService";
+    //private final String URL_ORD = "http://10.0.0.254:8273/ADInterface-1.0/services/AppDroidServices";
+    //En base de Test
+    private final String URL = "http://200.71.26.66:6020/ADInterface-1.0/services/ModelADService";
+    private final String URL_ORD = "http://200.71.26.66:6020/ADInterface-1.0/services/AppDroidServices";
+
     private final String METHOD_NAME = "queryData";
     private final String METHOD_NAME_ORD = "InOrderRT";
     private final String SOAP_ACTION = "http://3e.pl/ADInterface/ModelADServicePortType/queryDataRequest";

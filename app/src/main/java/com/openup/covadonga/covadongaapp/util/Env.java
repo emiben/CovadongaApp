@@ -26,8 +26,13 @@ public class Env {
     private static final long EXPIRATION_TIME_MS = 1;
 
     public static final String NAMESPACE = "http://3e.pl/ADInterface";
+
+    //En OpUp
     //public static final String URL="http://covadonga.dyndns.org:8273/ADInterface-1.0/services/ADService";
-    public static final String URL="http://10.0.0.254:8273/ADInterface-1.0/services/ADService";
+    //En covadonga
+    //public static final String URL="http://10.0.0.254:8273/ADInterface-1.0/services/ADService";
+    //En base de Test
+    public static final String URL="http://200.71.26.66:6020/ADInterface-1.0/services/ADService";
 
     /**************************************************************************
      *  User

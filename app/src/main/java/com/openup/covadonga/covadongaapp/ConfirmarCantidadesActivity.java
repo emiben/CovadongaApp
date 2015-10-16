@@ -170,28 +170,38 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
             DBHelper db = null;
             int res;
 
-            String where = " c_order_id = " + ordId +
-                            " and m_product_id = (select m_product_id from uy_productupc where upc ="+ barCode + ")";
+//            String where = " c_order_id = " + ordId +
+//                            " and m_product_id = (select m_product_id from uy_productupc where upc ="+ barCode + ")";
+
+            String update = "update c_orderline set qtyinvoiced = qtyinvoiced + (" + facturado.getText().toString() + "),"
+                    + " qtydelivered = qtydelivered + (" + recibido.getText().toString() + "),"
+                    + " factura_id = '" + facturas.getSelectedItem().toString() + "'"
+                    + " where c_order_id = " + ordId
+                    + " and m_product_id = (select m_product_id from uy_productupc where upc ="+ barCode + ")";
 
             try {
                 db = new DBHelper(CustomApplication.getCustomAppContext());
                 db.openDB(1);
-                ContentValues cv = new ContentValues();
-                cv.put("qtyinvoiced", facturado.getText().toString());
-                cv.put("qtydelivered", recibido.getText().toString());
-                cv.put("factura_id", facturas.getSelectedItem().toString());
 
-                res = db.updateSQL("c_orderline", cv, where, null);
+                db.executeSQL(update);
+                finish();
 
-                //rs = db.querySQL(qry, null);
-                if(res > 0){
-                    Toast.makeText(getApplicationContext(), "Actualizado!",
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                }else{
-                    Toast.makeText(getApplicationContext(), "Error al actulizar!",
-                            Toast.LENGTH_SHORT).show();
-                }
+//                ContentValues cv = new ContentValues();
+//                cv.put("qtyinvoiced", facturado.getText().toString());
+//                cv.put("qtydelivered", recibido.getText().toString());
+//                cv.put("factura_id", facturas.getSelectedItem().toString());
+//
+//                res = db.updateSQL("c_orderline", cv, where, null);
+//
+//                //rs = db.querySQL(qry, null);
+//                if(res > 0){
+//                    Toast.makeText(getApplicationContext(), "Actualizado!",
+//                            Toast.LENGTH_SHORT).show();
+//                    finish();
+//                }else{
+//                    Toast.makeText(getApplicationContext(), "Error al actulizar!",
+//                            Toast.LENGTH_SHORT).show();
+//                }
 
             }catch (Exception e) {
                 e.getMessage();

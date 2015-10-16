@@ -152,8 +152,11 @@ public class ListaProveedorActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 if (tvEmpresa.getText().toString() != "") {
-                    //startListaOrdenesActivity();
-                    getProvOrdersWS();
+                    if(recType == 0){
+                        getProvOrdersWS();
+                    }else{
+                        getNonOrderProvData();
+                    }
                 } else {
                     Toast.makeText(getApplicationContext(), "Por favor elija un proveedor!", Toast.LENGTH_SHORT).show();
                 }
@@ -461,7 +464,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
         DBHelper db = null;
         String qry1 = "select max(c_order_id), max(documentno) from c_order where c_order_id < 1000000";
 
-        insertPLVProds(priceListVersion, provID);
+        insertPLVProdsWS(priceListVersion, provID);
         insertProds();
 
         try {
@@ -484,7 +487,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
 
     }
 
-    private void insertPLVProds(int pLV, int provID){
+    private void insertPLVProdsWS(int pLV, int provID){
         WebServices ws = new WebServices();
         String[] columYVal = new String[2];
         SoapObject resultado_xml = null;
@@ -544,7 +547,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
 
         DBHelper db = new DBHelper(this);
         db.openDB(0);
-        Cursor rs = db.querySQL("select m_pricelist_id from c_bpartner where c_bpartner_id = " + provID, null);
+            Cursor rs = db.querySQL("select m_pricelist_id from c_bpartner where c_bpartner_id = " + provID, null);
 
         if(rs.moveToFirst()){
             int i = 0;
