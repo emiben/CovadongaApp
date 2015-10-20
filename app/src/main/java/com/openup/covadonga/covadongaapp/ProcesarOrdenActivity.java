@@ -333,17 +333,17 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             scan.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //insertUPC();
+                    insertUPC();
                     //Scan de ordenes
-                    intentService.putExtra(KEY_ACTION, "UP");
-                    getActivity().startService(intentService);
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    intentService.putExtra(KEY_ACTION, "DOWN");
-                    getActivity().startService(intentService);
+//                    intentService.putExtra(KEY_ACTION, "UP");
+//                    getActivity().startService(intentService);
+//                    try {
+//                        Thread.sleep(10);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    intentService.putExtra(KEY_ACTION, "DOWN");
+//                    getActivity().startService(intentService);
 
                     //insertUPCPDA();
                 }
@@ -470,27 +470,46 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
     }
 
         public void newOrderProcess() {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.new_supplier);
-            builder.setMessage(R.string.process_new_order)
-                .setPositiveButton(R.string.txtOK, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        startListaClienteActivity();
-                    }
-                })
-                    .setNegativeButton(R.string.txtCancell, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
-                    }
-                });
+//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//            builder.setTitle(R.string.new_supplier);
+//            builder.setMessage(R.string.process_new_order)
+//                .setPositiveButton(R.string.txtOK, new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int id) {
+//                        startListaClienteActivity();
+//                    }
+//                })
+//                    .setNegativeButton(R.string.txtCancell, new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int id) {
+//                        // User cancelled the dialog
+//                    }
+//                });
+//
+//        // Create the AlertDialog object and return it
+//        builder.create();
+//        builder.show();
 
-        // Create the AlertDialog object and return it
-        builder.create();
-        builder.show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            // Add the buttons
+            builder.setTitle("Recepcion con Orden de Compra?");
+            builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    startListaClienteActivity(0);
+                }
+            });
+            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    startListaClienteActivity(1);
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
     }
 
-    private void startListaClienteActivity() {
+    private void startListaClienteActivity(int recType) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("recType", recType);
         Intent i = new Intent(this, ListaProveedorActivity.class);
+        i.putExtras(bundle);
         startActivity(i);
     }
 

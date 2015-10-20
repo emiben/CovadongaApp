@@ -29,6 +29,7 @@ public class ListaOrdenesActivity extends ActionBarActivity {
     private String[]    prov;
     private String[]    orders;
     private int         tam;
+    private int         recType; // 0 con orden, 1 sin orden
     // Listview Adapter
     private ArrayAdapter<String> adaptador;
 
@@ -160,11 +161,15 @@ public class ListaOrdenesActivity extends ActionBarActivity {
         if (null != b) {
             prov = b.getString("Prov").split(";");
             tam = prov.length;
+            recType = b.getInt("recType");
         }
     }
 
     private void startListaProveedorActivity() {
+        Bundle bundle = new Bundle();
+        bundle.putInt("recType", recType);
         Intent i = new Intent(this, ListaProveedorActivity.class);
+        i.putExtras(bundle);
         this.finish();
         startActivity(i);
     }

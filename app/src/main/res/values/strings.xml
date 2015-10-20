@@ -65,6 +65,7 @@
     <string name="txtScan">Escanear</string>
     <string name="txtFac">Fact.</string>
     <string name="txtRec">Rec.</string>
+    <string name="txtInsertBC">Ingresar CB</string>
 
     <!-- Dialog Cantidades recibidas-->
     <string name="txtInvoiced">Facturado</string>

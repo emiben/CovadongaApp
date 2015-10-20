@@ -83,7 +83,7 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/txtScan"
+                    android:text="@string/txtInsertBC"
                     android:background="@drawable/button_customize"
                     android:textColor="#FFFFFF"
                     android:id="@+id/btnScan"

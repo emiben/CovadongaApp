@@ -23,6 +23,7 @@ import com.openup.covadonga.covadongaapp.util.DBHelper;
 import com.openup.covadonga.covadongaapp.util.WebServices;
 
 import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapPrimitive;
 
 import java.sql.ResultSet;
 
@@ -152,10 +153,10 @@ public class ListaProveedorActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 if (tvEmpresa.getText().toString() != "") {
-                    if(recType == 0){
+                    if (recType == 0) {
                         getProvOrdersWS();
-                    }else{
-                        getNonOrderProvData();
+                    } else {
+                        getNonOrderProvWS();
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Por favor elija un proveedor!", Toast.LENGTH_SHORT).show();
@@ -175,6 +176,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
     private void startListaOrdenesActivity() {
         Intent i = new Intent(this, ListaOrdenesActivity.class);
         Bundle b = new Bundle();
+        b.putInt("recType", recType);
         b.putString("Prov", tvEmpresa.getText().toString());
 
         i.putExtras(b);
@@ -190,6 +192,21 @@ public class ListaProveedorActivity extends ActionBarActivity {
                 try {
                     getProvOrders(getProvId());
                     insertProds();
+                    startListaOrdenesActivity();
+                } catch (Exception e) {
+                    e.getMessage();
+                }
+                pDialog.dismiss();
+            }
+        }.start();
+    }
+
+    public void getNonOrderProvWS() {
+        pDialog = ProgressDialog.show(this, null, "Consultando datos...", true);
+        new Thread() {
+            public void run() {
+                try {
+                    getNonOrderProvData();
                     startListaOrdenesActivity();
                 } catch (Exception e) {
                     e.getMessage();
@@ -356,7 +373,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
         db.openDB(1);
 
         if(recType == 0){
-            rs = db.querySQL("select m_product_id from c_orderline", null);
+            rs = db.querySQL("select m_product_id from c_orderline where c_bpartner_id = " + getProvId(), null);
         }else {
             rs = db.querySQL("select m_product_id from priceListProducts where c_bpartner_id = " + getProvId(), null);
         }
@@ -376,7 +393,8 @@ public class ListaProveedorActivity extends ActionBarActivity {
                 }else if(ws.getMessage() == "Error!!"){
                     Toast.makeText(getApplicationContext(),
                             "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
-                }else{
+                }
+                if(resultado_xml.getPropertyCount() > 0){
                     insertProds(resultado_xml);
                 }
 
@@ -386,7 +404,9 @@ public class ListaProveedorActivity extends ActionBarActivity {
                 }else if(ws.getMessage() == "Error!!"){
                     Toast.makeText(getApplicationContext(),
                             "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
-                }else{
+                }
+
+                if(resultado_xml2.getPropertyCount() > 0){
                     insertProdsUPC(resultado_xml2);
                 }
             }while(rs.moveToNext());
@@ -464,9 +484,6 @@ public class ListaProveedorActivity extends ActionBarActivity {
         DBHelper db = null;
         String qry1 = "select max(c_order_id), max(documentno) from c_order where c_order_id < 1000000";
 
-        insertPLVProdsWS(priceListVersion, provID);
-        insertProds();
-
         try {
             db = new DBHelper(getApplicationContext());
             db.openDB(1);
@@ -479,15 +496,20 @@ public class ListaProveedorActivity extends ActionBarActivity {
             String qry = "Insert into c_order values ("+orderId+","+documentno+","+provID+",'N','',0)";
             db.executeSQL(qry);
 
+            insertPLVProdsWS(priceListVersion, provID, orderId);
+            insertProds();
+
         }catch (Exception e) {
             e.getMessage();
         } finally {
             db.close();
         }
 
+
+
     }
 
-    private void insertPLVProdsWS(int pLV, int provID){
+    private void insertPLVProdsWS(int pLV, int provID, int ordID){
         WebServices ws = new WebServices();
         String[] columYVal = new String[2];
         SoapObject resultado_xml = null;
@@ -505,15 +527,17 @@ public class ListaProveedorActivity extends ActionBarActivity {
         }else if(ws.getMessage() == "Error!!"){
             Toast.makeText(getApplicationContext(),
                     "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
-        }else{
-            insertPLVProds(resultado_xml, pLV, provID);
         }
+        if(resultado_xml.getPropertyCount() > 0){
+            insertPLVProds(resultado_xml, pLV, provID, ordID);
+        }
+
     }
 
-    private void insertPLVProds(SoapObject so, int pLV, int provID){
+    private void insertPLVProds(SoapObject so, int pLV, int provID, int ordID){
 
         SoapObject dataResult = (SoapObject)so.getProperty(0);
-
+        int orderLine = 1;
         int tam = dataResult.getPropertyCount();
         String delims = "[=;]";
 
@@ -524,11 +548,20 @@ public class ListaProveedorActivity extends ActionBarActivity {
             if(tam > 0) {
                 for (int i = 0; i < tam; i++) {
                     SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
-                    String col1[] = dataRow.getProperty(0).toString().split(delims); //Description
+                    String col1[] = dataRow.getProperty(0).toString().split(delims);//m_product_id
+
+                    String qry1 = "select max(c_orderline_id) from c_orderline where c_orderline_id < 1000000";
+                    Cursor rs = db.querySQL(qry1, null);
+                    if(rs.moveToFirst()){
+                        orderLine = orderLine + rs.getInt(0);
+                    }
 
                     String qry = "Insert into priceListProducts values ("+provID+","+pLV+","+col1[1]+")";
+                    String qryOL = "Insert into c_orderline values ("+orderLine+","+ordID+","+(i+1)+","+provID+","+col1[1]
+                                +",0,0,0,'')";
 
                     db.executeSQL(qry);
+                    db.executeSQL(qryOL);
                 }
             }
         } catch (Exception e){
@@ -560,14 +593,14 @@ public class ListaProveedorActivity extends ActionBarActivity {
             }else if(ws.getMessage() == "Error!!"){
                 Toast.makeText(getApplicationContext(),
                         "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
-            }else{
-                SoapObject dataResult = (SoapObject)resultado_xml.getProperty(0);
-                String delims = "[=;]";
-
-                SoapObject dataRow = (SoapObject) dataResult.getProperty(0);
-                String col1[] = dataRow.getProperty(0).toString().split(delims); //Description
-                plv = Integer.valueOf(col1[1]);
             }
+            SoapPrimitive dataResult = (SoapPrimitive)resultado_xml.getProperty(0);
+            //String delims = "[=;]";
+
+            Object o = dataResult.getValue();
+            plv = Integer.valueOf(o.toString());
+//            String col1[] = dataRow.getProperty(0).toString().split(delims); //Description
+//            plv = Integer.valueOf(col1[1]);
         }
         return plv;
     }

@@ -156,7 +156,9 @@ public class SincronizeData {
                     " l.qtyinvoiced, l.qtydelivered, l.factura_id, f.fecha" +
                     " from c_orderline l join factura f" +
                     " on l.factura_id = f.factura_id" +
-                    " where l.c_order_id = " + ordId;
+                    " where l.c_order_id = " + ordId +
+                    " and l.c_order_id not in" +
+                    " (select c_orderline_id from c_orderline where qtyordered = 0 and qtydelivered = 0 and qtyinvoiced = 0)";
             ordLineCurs = db.querySQL(qryOrdLine, null);
             orderLines = new OrderLine[ordLineCurs.getCount()];
             if (ordLineCurs.moveToFirst()) {

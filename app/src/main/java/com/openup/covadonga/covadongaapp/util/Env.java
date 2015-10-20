@@ -34,6 +34,9 @@ public class Env {
     //En base de Test
     public static final String URL="http://200.71.26.66:6020/ADInterface-1.0/services/ADService";
 
+    //En base de Syl
+//    public static final String URL="http://SBTPC:8080/ADInterface-1.0/services/ADService";
+
     /**************************************************************************
      *  User
      */

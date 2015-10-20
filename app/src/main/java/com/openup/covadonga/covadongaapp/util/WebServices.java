@@ -6,6 +6,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.AttributeInfo;
 import org.ksoap2.serialization.PropertyInfo;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -34,8 +35,14 @@ public class WebServices {
     private final String URL = "http://200.71.26.66:6020/ADInterface-1.0/services/ModelADService";
     private final String URL_ORD = "http://200.71.26.66:6020/ADInterface-1.0/services/AppDroidServices";
 
+    //Syl
+//    private final String URL = "http://SBTPC:8080/ADInterface-1.0/services/ModelADService";
+//    private final String URL_ORD = "http://SBTPC:8080/ADInterface-1.0/services/AppDroidServices";
+
+
     private final String METHOD_NAME = "queryData";
     private final String METHOD_NAME_ORD = "InOrderRT";
+    private final String METHOD_NAME_WPO = "runProcess";
     private final String SOAP_ACTION = "http://3e.pl/ADInterface/ModelADServicePortType/queryDataRequest";
     private final String SOAP_ACTION_ORD = "http://www.erpconsultoresyasociados.com/AppDroidServicesPortType/InOrderRTRequest";
     private final String METHOD_NAME_INSERT = "createData";
@@ -194,40 +201,59 @@ public class WebServices {
 
         Env env = new Env();
         SoapObject resultado_xml = null;
-        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
-        SoapObject ModelCRUDRequest = new SoapObject(NAMESPACE, "ModelCRUDRequest");
-        SoapObject ModelCRUD = new SoapObject(NAMESPACE, "ModelCRUD");
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_WPO);
+        SoapObject ModelCRUDRequest = new SoapObject(NAMESPACE, "ModelRunProcessRequest");
+        SoapObject ModelCRUD = new SoapObject(NAMESPACE, "ModelRunProcess");
+
+        AttributeInfo attr1 = new AttributeInfo();
+        attr1.setName("AD_Menu_ID");
+        attr1.setValue("1001120");
+        attr1.setType(Integer.class);
+        ModelCRUD.setAttribute(attr1);
+
+        AttributeInfo attr2 = new AttributeInfo();
+        attr2.setName("AD_Record_ID");
+        attr2.setValue("0");
+        attr1.setType(Integer.class);
+        ModelCRUD.setAttribute(attr2);
+
+        AttributeInfo attr3 = new AttributeInfo();
+        attr3.setName("AD_Process_ID");
+        attr3.setValue("1000443");
+        attr3.setType(Integer.class);
+        ModelCRUD.setAttribute(attr3);
 
         PropertyInfo serviceType = new PropertyInfo();
         serviceType.setName("serviceType");
         serviceType.setValue(method);
         serviceType.setNamespace(NAMESPACE);
         serviceType.setType(String.class);
+
         ModelCRUD.addProperty(serviceType);
-        ModelCRUD.addProperty("serviceType", "RegisterMobileUser");
-        PropertyInfo TableName = new PropertyInfo();
-        TableName.setName("AD_Menu_ID");
-        TableName.setValue("1001120");
-        TableName.setNamespace(NAMESPACE);
-        TableName.setType(String.class);
-        ModelCRUD.addProperty(TableName);
+//        ModelCRUD.addProperty("serviceType", "RegisterMobileUser");
+//        PropertyInfo TableName = new PropertyInfo();
+//        TableName.setName("AD_Menu_ID");
+//        TableName.setValue("1001120");
+//        TableName.setNamespace(NAMESPACE);
+//        TableName.setType(String.class);
+//        ModelCRUD.addProperty(TableName);
         // ModelCRUD.addProperty("TableName", "UY_UserReq");
-        PropertyInfo RecordID = new PropertyInfo();
-        RecordID.setName("AD_Record_ID");
-        RecordID.setValue("0");
-        RecordID.setNamespace(NAMESPACE);
-        RecordID.setType(String.class);
-        ModelCRUD.addProperty(RecordID);
+//        PropertyInfo RecordID = new PropertyInfo();
+//        RecordID.setName("AD_Record_ID");
+//        RecordID.setValue("0");
+//        RecordID.setNamespace(NAMESPACE);
+//        RecordID.setType(String.class);
+//        ModelCRUD.addProperty(RecordID);
         //ModelCRUD.addProperty("RecordID", "1");
-        PropertyInfo Action = new PropertyInfo();
-        Action.setName("AD_Process_ID");
-        Action.setValue("1000443");
-        Action.setNamespace(NAMESPACE);
-        Action.setType(String.class);
-        ModelCRUD.addProperty(Action);
+//        PropertyInfo Action = new PropertyInfo();
+//        Action.setName("AD_Process_ID");
+//        Action.setValue("1000443");
+//        Action.setNamespace(NAMESPACE);
+//        Action.setType(String.class);
+//        ModelCRUD.addProperty(Action);
         // ModelCRUD.addProperty("Action", "Create");
 
-        SoapObject DataRow = new SoapObject(NAMESPACE, "DataRow");
+        SoapObject DataRow = new SoapObject(NAMESPACE, "ParamValues");
         SoapObject field;
 
         if(ColumYVal != null) {
