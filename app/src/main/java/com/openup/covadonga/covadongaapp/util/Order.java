@@ -5,10 +5,19 @@ package com.openup.covadonga.covadongaapp.util;
  */
 public class Order {
 
+    private int     prodID;
     private String  codigoDesc;
     private double  cantOrdenada;
     private double  cantFactura;
     private double  cantRecibida;
+
+    public int getProdID() {
+        return prodID;
+    }
+
+    public void setProdID(int prodID) {
+        this.prodID = prodID;
+    }
 
     public void setCodigoDesc(String codDes){
         this.codigoDesc = codDes;

@@ -1,7 +1,6 @@
 package com.openup.covadonga.covadongaapp;
 
 import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -20,10 +19,6 @@ import android.widget.Toast;
 
 import com.openup.covadonga.covadongaapp.util.CustomApplication;
 import com.openup.covadonga.covadongaapp.util.DBHelper;
-import com.openup.covadonga.covadongaapp.util.Order;
-
-import java.util.ArrayList;
-
 
 public class ConfirmarCantidadesActivity extends ActionBarActivity {
 
@@ -35,6 +30,8 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
     private Spinner     facturas;
     private Button      cancell;
     private Button      ok;
+    private int         prodID;
+    private int         type; //0 viene del Scan con codigo de Barra, 1 Viene del Click de la lista
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +126,8 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         if (null != b) {
             ordId = b.getInt("c_order_id");
             barCode = b.getLong("barcode");
+            prodID = b.getInt("m_product_id");
+            type = b.getInt("type");
         }
     }
 
@@ -137,13 +136,24 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
     private void getProd(){
         DBHelper db = null;
         Cursor rs = null;
-        String qry = "select p.name" +
-                        " from c_orderline ol JOIN m_product p" +
-                        " ON ol.m_product_id = p.m_product_id" +
-                        " JOIN uy_productupc up" +
-                        " ON ol.m_product_id = up.m_product_id" +
-                        " where ol.c_order_id = " + ordId +
-                        " and up.upc = " + barCode;
+        String qry = "";
+
+        if(type == 0){
+            qry = "select p.name" +
+                    " from c_orderline ol JOIN m_product p" +
+                    " ON ol.m_product_id = p.m_product_id" +
+                    " JOIN uy_productupc up" +
+                    " ON ol.m_product_id = up.m_product_id" +
+                    " where ol.c_order_id = " + ordId +
+                    " and up.upc = " + barCode;
+        }else{
+            qry = "select p.name" +
+                    " from c_orderline ol JOIN m_product p" +
+                    " ON ol.m_product_id = p.m_product_id" +
+                    " where ol.c_order_id = " + ordId +
+                    " and ol.m_product_id = " + prodID;
+        }
+
 
         try {
             db = new DBHelper(CustomApplication.getCustomAppContext());
@@ -168,16 +178,21 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
                     Toast.LENGTH_SHORT).show();
         }else{
             DBHelper db = null;
-            int res;
+            String update = "";
 
-//            String where = " c_order_id = " + ordId +
-//                            " and m_product_id = (select m_product_id from uy_productupc where upc ="+ barCode + ")";
+            if(type == 0){
+                update = "update c_orderline set qtyinvoiced = qtyinvoiced + (" + facturado.getText().toString() + "),"
+                        + " qtydelivered = qtydelivered + (" + recibido.getText().toString() + "),"
+                        + " factura_id = '" + facturas.getSelectedItem().toString() + "'"
+                        + " where c_order_id = " + ordId
+                        + " and m_product_id = (select m_product_id from uy_productupc where upc ="+ barCode + ")";
+            }else{
+                update = "update c_orderline set qtyinvoiced = " + facturado.getText().toString() + ","
+                        + " qtydelivered = " + recibido.getText().toString() + ","
+                        + " factura_id = '" + facturas.getSelectedItem().toString() + "'"
+                        + " where c_order_id = " + ordId + " and m_product_id = " + prodID;
+            }
 
-            String update = "update c_orderline set qtyinvoiced = qtyinvoiced + (" + facturado.getText().toString() + "),"
-                    + " qtydelivered = qtydelivered + (" + recibido.getText().toString() + "),"
-                    + " factura_id = '" + facturas.getSelectedItem().toString() + "'"
-                    + " where c_order_id = " + ordId
-                    + " and m_product_id = (select m_product_id from uy_productupc where upc ="+ barCode + ")";
 
             try {
                 db = new DBHelper(CustomApplication.getCustomAppContext());

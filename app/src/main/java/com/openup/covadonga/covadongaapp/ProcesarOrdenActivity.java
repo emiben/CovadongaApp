@@ -31,6 +31,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -292,7 +293,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             DBHelper db = null;
             ArrayList<Order> results = new ArrayList<Order>();
             Cursor rs = null;
-            String qry = "select p.name, ol.qtyordered, ol.qtyinvoiced, ol.qtydelivered" +
+            String qry = "select p.m_product_id, p.name, ol.qtyordered," +
+                           " ol.qtyinvoiced, ol.qtydelivered" +
                            " from c_orderline ol JOIN m_product p" +
                            " ON ol.m_product_id = p.m_product_id" +
                            " where ol.c_order_id = ";
@@ -311,10 +313,11 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                 if(rs.moveToFirst()){
                     do{
                         Order sr1 = new Order();
-                        sr1.setCodigoDesc(rs.getString(0));
-                        sr1.setCantOrdenada(rs.getFloat(1));
-                        sr1.setCantFactura(rs.getFloat(2));
-                        sr1.setCantRecibida(rs.getFloat(3));
+                        sr1.setProdID(rs.getInt(0));
+                        sr1.setCodigoDesc(rs.getString(1));
+                        sr1.setCantOrdenada(rs.getFloat(2));
+                        sr1.setCantFactura(rs.getFloat(3));
+                        sr1.setCantRecibida(rs.getFloat(4));
                         results.add(sr1);
                     }while(rs.moveToNext());
                 }
@@ -329,6 +332,15 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         }
 
         public void setActions() {
+
+            lvProducts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
+                    // TODO Auto-generated method stub
+                    Order ord = (Order)arg0.getItemAtPosition(position);
+                    startConfirmarCantidadesActivity(0, ord.getProdID(), 1);
+                }
+            });
 
             scan.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -383,7 +395,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             barCode = Long.valueOf(input.getText().toString());
-                            startConfirmarCantidadesActivity(barCode);
+                            startConfirmarCantidadesActivity(barCode, 0, 0);
                         }
                     });
             builder1.setNegativeButton("Cancel",
@@ -399,15 +411,17 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
 
         public void insertUPCPDA(){
             Long bc = Long.valueOf(strBarcode);
-            startConfirmarCantidadesActivity(bc);
+            startConfirmarCantidadesActivity(bc, 0, 0);
         }
 
 
-        public void startConfirmarCantidadesActivity(long barCode){
+        public void startConfirmarCantidadesActivity(long barCode, int prdID, int type){
             Intent i = new Intent(getActivity().getBaseContext(), ConfirmarCantidadesActivity.class);
             Bundle b = new Bundle();
             b.putInt("c_order_id", ordId);
             b.putLong("barcode", barCode);
+            b.putInt("m_product_id", prdID);
+            b.putInt("type", type);
             i.putExtras(b);
             startActivity(i);
         }

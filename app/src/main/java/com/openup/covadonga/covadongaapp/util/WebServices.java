@@ -648,5 +648,70 @@ public class WebServices {
     }
 
 
+    public SoapObject SoapCallerProds(int[] prodsID){
+        HttpClient httpClient = new DefaultHttpClient();
+        HttpPost httpPost = new HttpPost(URL_ORD);
+        SoapObject resultado_xml = null;
+        Env env = new Env();
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+        envelope.encodingStyle = SoapSerializationEnvelope.ENC;
+
+        //http://www.erpcya.com/
+        String _METHOD_NAME_DOS = "http://www.erpcya.com/";
+        SoapObject request = new SoapObject(NAMESPACE_ORD, "OutMBProductsRT"); //InOrder
+        SoapObject inPrdos = new SoapObject(_METHOD_NAME_DOS, "OutMBProductsRT");
+
+        PropertyInfo usrPI= new PropertyInfo();
+        usrPI.setName("UserRT");
+        usrPI.setValue(env.getUser());
+        usrPI.setNamespace(_METHOD_NAME_DOS);
+        usrPI.setType(String.class);
+        inPrdos.addProperty(usrPI);
+        //inOrder.addProperty("User",user.getName());
+        PropertyInfo pswPI= new PropertyInfo();
+        pswPI.setName("PassWordRT");
+        pswPI.setValue(env.getPass());
+        pswPI.setNamespace(_METHOD_NAME_DOS);
+        pswPI.setType(String.class);
+        inPrdos.addProperty(pswPI);
+        //inOrder.addProperty("PassWord", user.getPass());
+
+        SoapObject newProdsID = new SoapObject(_METHOD_NAME_DOS, "newLstProdIdsRT"); //OBJETO 1
+        SoapObject prductsID; //OBJETO 2
+        for( int i=0;i<prodsID.length;i++){
+            PropertyInfo dato= new PropertyInfo();
+            dato.setName("MProdId");
+            dato.setValue(prodsID[i]);
+            dato.setNamespace(_METHOD_NAME_DOS);
+            //dato.setType(Integer);
+            newProdsID.addProperty(dato);
+                //order.addProperty(datosDeOrden[j++],datosDeOrden[j]);// 0 nomb, 1 val
+        }
+
+        inPrdos.addSoapObject(newProdsID);
+        request.addSoapObject(inPrdos);
+
+        SoapSerializationEnvelope envp = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+        envp.dotNet = true;
+        envelope.setOutputSoapObject(request);
+        HttpTransportSE transporte = new HttpTransportSE(URL_ORD);
+        try {
+            transporte.call(SOAP_ACTION, envelope);
+            if((SoapObject) envelope.getResponse() != null) {
+                resultado_xml = (SoapObject) envelope.getResponse();
+            }
+            transporte.reset();
+        }catch (EOFException e1){
+            mensajeWS = "EOFException";
+        }catch (IOException e){
+            Log.i("WS Error->", e.toString());
+        }
+        catch (Exception e) {
+            Log.i("WS Error->",e.toString());
+        }
+        return resultado_xml;
+    }
+
+
 
 }

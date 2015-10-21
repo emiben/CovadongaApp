@@ -379,37 +379,95 @@ public class ListaProveedorActivity extends ActionBarActivity {
         }
 
 
+//        if(rs.moveToFirst()){
+//            do{
+//                int i = 0;
+//                columYVal[i++] = "IsActive"; //colum
+//                columYVal[i++] = "Y"; //val
+//                columYVal[i++] = "M_Product_ID"; //colum
+//                columYVal[i++] = String.valueOf(rs.getInt(0)); //val
+//
+//                resultado_xml = ws.webServiceQry("LoadProducts", "M_Product", columYVal);
+//                if(ws.getMessage() == "EOFException"){
+//                    resultado_xml = ws.webServiceQry("LoadProducts", "M_Product", columYVal);
+//                }else if(ws.getMessage() == "Error!!"){
+//                    Toast.makeText(getApplicationContext(),
+//                            "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
+//                }
+//                if(resultado_xml.getPropertyCount() > 0){
+//                    insertProds(resultado_xml);
+//                }
+//
+//                resultado_xml2 = ws.webServiceQry("LoadUPC", "UY_ProductUpc", columYVal);
+//                if(ws.getMessage() == "EOFException"){
+//                    resultado_xml2 = ws.webServiceQry("LoadUPC", "UY_ProductUpc", columYVal);
+//                }else if(ws.getMessage() == "Error!!"){
+//                    Toast.makeText(getApplicationContext(),
+//                            "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
+//                }
+//
+//                if(resultado_xml2.getPropertyCount() > 0){
+//                    insertProdsUPC(resultado_xml2);
+//                }
+//            }while(rs.moveToNext());
+//        }
+
         if(rs.moveToFirst()){
-            do{
-                int i = 0;
-                columYVal[i++] = "IsActive"; //colum
-                columYVal[i++] = "Y"; //val
-                columYVal[i++] = "M_Product_ID"; //colum
-                columYVal[i++] = String.valueOf(rs.getInt(0)); //val
+            int tam = rs.getCount();
+            int[] prodsID = new int[tam];
+            for(int i=0; i<tam; i++){
+                prodsID[i] = rs.getInt(0);
+                rs.moveToNext();
+            }
 
-                resultado_xml = ws.webServiceQry("LoadProducts", "M_Product", columYVal);
-                if(ws.getMessage() == "EOFException"){
-                    resultado_xml = ws.webServiceQry("LoadProducts", "M_Product", columYVal);
-                }else if(ws.getMessage() == "Error!!"){
-                    Toast.makeText(getApplicationContext(),
-                            "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
-                }
-                if(resultado_xml.getPropertyCount() > 0){
-                    insertProds(resultado_xml);
-                }
+            resultado_xml = ws.SoapCallerProds(prodsID);
+            if (ws.getMessage() == "EOFException"){
+                resultado_xml = ws.SoapCallerProds(prodsID);
+            }else if(ws.getMessage() == "Error!!"){
+                Toast.makeText(getApplicationContext(),
+                        "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
+            }
+            if(resultado_xml.getPropertyCount() > 0){
+                insertProds2(resultado_xml);
+            }
+        }
+    }
 
-                resultado_xml2 = ws.webServiceQry("LoadUPC", "UY_ProductUpc", columYVal);
-                if(ws.getMessage() == "EOFException"){
-                    resultado_xml2 = ws.webServiceQry("LoadUPC", "UY_ProductUpc", columYVal);
-                }else if(ws.getMessage() == "Error!!"){
-                    Toast.makeText(getApplicationContext(),
-                            "Error! Por favor intente nuevamente!!", Toast.LENGTH_SHORT).show();
-                }
+    private void insertProds2(SoapObject so){
 
-                if(resultado_xml2.getPropertyCount() > 0){
-                    insertProdsUPC(resultado_xml2);
+        int tam = so.getPropertyCount();
+        String delims = "[=;]";
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+
+        try{
+            if(tam > 0) {
+                for (int i = 0; i < tam; i++) {
+                    SoapObject dataRow = (SoapObject) so.getProperty(i);
+                    int tam2 = dataRow.getPropertyCount();
+                    String col1 = dataRow.getProperty(0).toString(); //MProductID
+                    String col2 = dataRow.getProperty(1).toString(); //Name
+                    String col3 = dataRow.getProperty(2).toString(); //Descripcion
+                    //String col4[] = dataRow.getProperty(3).toString().split(delims); //UPC
+
+                    for (int j = 4; j<tam2; j++){
+                        insertProdsUPC2((SoapObject)dataRow.getProperty(j));
+                    }
+
+                    String qry = "Insert into M_Product values (";
+                    qry = qry + col1 + ",'" + col2 + "','" + col3 + "','','N')";
+                    try{
+                        db.executeSQL(qry);
+                    }catch (Exception e){
+                        System.out.print(e);
+                    }
                 }
-            }while(rs.moveToNext());
+            }
+        } catch (Exception e){
+            System.out.print(e);
+        }finally {
+            db.close();
         }
     }
 
@@ -435,9 +493,36 @@ public class ListaProveedorActivity extends ActionBarActivity {
                     String qry = "Insert into M_Product values (";
                     qry = qry + col2[1] + ",'" + col3[1] + "','" + col1[1] + "','" + col4[1] + "','N')";
 
-                    db.executeSQL(qry);
+                    try{
+                        db.executeSQL(qry);
+                    }catch (Exception e){
+                        System.out.print(e);
+                    }
+
                 }
             }
+        } catch (Exception e){
+            System.out.print(e);
+        }finally {
+            db.close();
+        }
+    }
+
+
+    private void insertProdsUPC2(SoapObject so){
+
+        DBHelper db = new DBHelper(this);
+        db.openDB(1);
+
+        try{
+            String col1 = so.getProperty(0).toString(); //codUpc
+            String col2 = so.getProperty(1).toString(); //MProductID
+            String col3 = so.getProperty(2).toString(); //UYProductUpcID
+
+            String qry = "Insert into uy_productupc values (";
+            qry = qry + col3 + ",'" + col2 + "','" + col1 + "')";
+
+            db.executeSQL(qry);
         } catch (Exception e){
             System.out.print(e);
         }finally {

@@ -38,10 +38,12 @@ public class CustomListAdapter extends ArrayAdapter<Order> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item, parent, false);
         }
         // Lookup view for data population
+        EditText prodID = (EditText) convertView.findViewById(R.id.prodID);
         TextView prod = (TextView) convertView.findViewById(R.id.prodDesc);
         TextView cantFact = (TextView) convertView.findViewById(R.id.cantFact);
         TextView cantEntregado = (TextView) convertView.findViewById(R.id.cantRec);
         // Populate the data into the template view using the data object
+        prodID.setText(String.valueOf(order.getProdID()));
         prod.setText(order.getCodigoDesc());
         double Fact = order.getCantFactura();
         BigDecimal Factu = new BigDecimal(Fact).setScale(1, RoundingMode.HALF_UP);
