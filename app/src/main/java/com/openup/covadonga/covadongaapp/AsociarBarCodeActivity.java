@@ -222,15 +222,16 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
     public void startConfirmarCantidadesActivity(long barCode, int prdID, int type){
         Intent i = new Intent(this, ConfirmarCantidadesActivity.class);
         Bundle b = new Bundle();
-        b.putInt("c_order_id", ordId);
-        b.putLong("barcode", barCode);
-        b.putInt("m_product_id", prdID);
-        b.putInt("type", type);
-        b.putString("lastInvoice", lastInvoice);
+        //b.putInt("c_order_id", ordId);
+//        b.putLong("barcode", barCode);
+//        b.putInt("m_product_id", prdID);
+//        b.putInt("type", type);
+        b.putString("key", lastInvoice);
         i.putExtras(b);
+        setResult(RESULT_OK, i);
         //startActivity(i);
         finish();
-        startActivityForResult(i, 1);
+        //startActivityForResult(i, 1);
     }
 
 }

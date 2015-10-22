@@ -32,7 +32,7 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
     private Button      ok;
     private int         prodID;
     private int         type; //0 viene del Scan con codigo de Barra, 1 Viene del Click de la lista
-    private String      lastInvoice;
+    private String      lastInvoice = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +42,7 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         getViewElements();
         getBundleData();
         getProd();
-        loadInvoices();//ver si lo cargamos o lo ingresan
+        loadInvoices();
         setActions();
     }
 
@@ -66,6 +66,35 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        getProd2();
+        loadInvoices();
+        setActions();
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        try {
+            super.onActivityResult(requestCode, resultCode, data);
+
+            if(requestCode == 2){
+                if (resultCode == RESULT_OK) {
+                    lastInvoice = data.getStringExtra("key").toString();
+                }
+            }
+
+        } catch (Exception ex) {
+            Toast.makeText(this, ex.toString(),
+                    Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public void getViewElements(){
@@ -177,6 +206,43 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         }
     }
 
+    private void getProd2(){
+        DBHelper db = null;
+        Cursor rs = null;
+        String qry = "";
+
+        if(type == 0){
+            qry = "select p.name" +
+                    " from c_orderline ol JOIN m_product p" +
+                    " ON ol.m_product_id = p.m_product_id" +
+                    " JOIN uy_productupc up" +
+                    " ON ol.m_product_id = up.m_product_id" +
+                    " where ol.c_order_id = " + ordId +
+                    " and up.upc = " + barCode;
+        }else{
+            qry = "select p.name" +
+                    " from c_orderline ol JOIN m_product p" +
+                    " ON ol.m_product_id = p.m_product_id" +
+                    " where ol.c_order_id = " + ordId +
+                    " and ol.m_product_id = " + prodID;
+        }
+
+
+        try {
+            db = new DBHelper(CustomApplication.getCustomAppContext());
+            db.openDB(0);
+            rs = db.querySQL(qry, null);
+
+            if(rs.moveToFirst()) {
+                producto.setText(rs.getString(0));
+            }
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+    }
+
     private void insertCant(){
         if(facturado.getText().toString().equals("") || recibido.getText().toString().equals("")){
             Toast.makeText(getApplicationContext(), "Por favor ingrese cantidad Facturada y Recibida!",
@@ -241,8 +307,9 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         b.putLong("barcode", barCode);
         b.putString("lastInvoice", lastInvoice);
         i.putExtras(b);
-        finish();
-        startActivity(i);
+        //finish();
+        //startActivity(i);
+        startActivityForResult(i, 2);
     }
 
     public void insertUPC(){
