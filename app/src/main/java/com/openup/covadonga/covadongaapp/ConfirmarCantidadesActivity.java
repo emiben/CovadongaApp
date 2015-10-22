@@ -32,6 +32,7 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
     private Button      ok;
     private int         prodID;
     private int         type; //0 viene del Scan con codigo de Barra, 1 Viene del Click de la lista
+    private String      lastInvoice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +92,9 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray); //selected item will look like a spinner set from XML
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         facturas.setAdapter(spinnerArrayAdapter);
+        if(!lastInvoice.equalsIgnoreCase("")){
+            facturas.setSelection(spinnerArrayAdapter.getPosition(lastInvoice));
+        }
     }
 
     public String getfacturas(){
@@ -128,6 +132,7 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
             barCode = b.getLong("barcode");
             prodID = b.getInt("m_product_id");
             type = b.getInt("type");
+            lastInvoice = b.getString("lastInvoice");
         }
     }
 
@@ -199,6 +204,9 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
                 db.openDB(1);
 
                 db.executeSQL(update);
+                Intent intent = getIntent();
+                intent.putExtra("key", facturas.getSelectedItem().toString());
+                setResult(RESULT_OK, intent);
                 finish();
 
 //                ContentValues cv = new ContentValues();
@@ -231,6 +239,7 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         Bundle b = new Bundle();
         b.putInt("c_order_id", ordId);
         b.putLong("barcode", barCode);
+        b.putString("lastInvoice", lastInvoice);
         i.putExtras(b);
         finish();
         startActivity(i);

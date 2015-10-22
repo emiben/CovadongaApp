@@ -199,6 +199,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         private int         docID;
         private int         ordId;
         private long        barCode;
+        private String      lastInvoice = "";
 
         //Scan de ordenes
         //send by BarcodeService
@@ -269,6 +270,24 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             getActivity().registerReceiver(mReceiver, filter);
 
             loadProducts();
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            try {
+                super.onActivityResult(requestCode, resultCode, data);
+
+                if(requestCode == 1){
+                    if (resultCode == RESULT_OK) {
+                        lastInvoice = data.getStringExtra("key").toString();
+                    }
+                }
+
+            } catch (Exception ex) {
+                Toast.makeText(getActivity().getBaseContext(), ex.toString(),
+                        Toast.LENGTH_SHORT).show();
+            }
+
         }
 
         //Scan de ordenes
@@ -422,8 +441,10 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             b.putLong("barcode", barCode);
             b.putInt("m_product_id", prdID);
             b.putInt("type", type);
+            b.putString("lastInvoice", lastInvoice);
             i.putExtras(b);
-            startActivity(i);
+            //startActivity(i);
+            startActivityForResult(i, 1);
         }
 
         public void finalizeOrder(){

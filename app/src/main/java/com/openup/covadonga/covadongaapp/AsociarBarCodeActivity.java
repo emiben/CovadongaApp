@@ -30,6 +30,7 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
     private int         ordId;
     private String      barCode;
     private String[]    prods;
+    private String      lastInvoice;
     // Listview Adapter
     private ArrayAdapter<String> adaptador;
 
@@ -120,6 +121,7 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
         if (null != b) {
             ordId = b.getInt("c_order_id");
             barCode = String.valueOf(b.getLong("barcode"));
+            lastInvoice = b.getString("lastInvoice");
             //barCode = b.getString("barcode");
         }
     }
@@ -194,7 +196,7 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
                 if(res > 0){
                     Toast.makeText(getApplicationContext(), "Actualizado!",
                             Toast.LENGTH_SHORT).show();
-                    startConfirmarCantidadesActivity();
+                    startConfirmarCantidadesActivity(Long.parseLong(barCode), 0, 0);
                 }else{
                     Toast.makeText(getApplicationContext(), "Error al actulizar!",
                             Toast.LENGTH_SHORT).show();
@@ -207,14 +209,28 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
             }
     }
 
-    public void startConfirmarCantidadesActivity(){
+//    public void startConfirmarCantidadesActivity(){
+//        Intent i = new Intent(this, ConfirmarCantidadesActivity.class);
+//        Bundle b = new Bundle();
+//        b.putInt("c_order_id", ordId);
+//        b.putLong("barcode", Long.parseLong(barCode));
+//        i.putExtras(b);
+//        finish();
+//        startActivity(i);
+//    }
+
+    public void startConfirmarCantidadesActivity(long barCode, int prdID, int type){
         Intent i = new Intent(this, ConfirmarCantidadesActivity.class);
         Bundle b = new Bundle();
         b.putInt("c_order_id", ordId);
-        b.putLong("barcode", Long.parseLong(barCode));
+        b.putLong("barcode", barCode);
+        b.putInt("m_product_id", prdID);
+        b.putInt("type", type);
+        b.putString("lastInvoice", lastInvoice);
         i.putExtras(b);
+        //startActivity(i);
         finish();
-        startActivity(i);
+        startActivityForResult(i, 1);
     }
 
 }
