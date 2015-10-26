@@ -24,6 +24,7 @@ public class Env {
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 1 ;
     private static final String SENDER_ID = "585544263746";
     private static final long EXPIRATION_TIME_MS = 1;
+    private static int  entradaScan = 1;
 
     public static final String NAMESPACE = "http://3e.pl/ADInterface";
 
@@ -181,5 +182,13 @@ public class Env {
         String convertido = fechaHora.format(dateOrdered);
 
         return convertido;
+    }
+
+    public int getEntradaScan() {
+        return entradaScan;
+    }
+
+    public void setEntradaScan(int entradaScan) {
+        Env.entradaScan = entradaScan;
     }
 }

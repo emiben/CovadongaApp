@@ -622,7 +622,6 @@ public class ListaProveedorActivity extends ActionBarActivity {
     private void insertPLVProds(SoapObject so, int pLV, int provID, int ordID){
 
         SoapObject dataResult = (SoapObject)so.getProperty(0);
-        int orderLine = 1;
         int tam = dataResult.getPropertyCount();
         String delims = "[=;]";
 
@@ -631,15 +630,16 @@ public class ListaProveedorActivity extends ActionBarActivity {
 
         try{
             if(tam > 0) {
+                int orderLine = 1;
+                String qry1 = "select max(c_orderline_id) from c_orderline where c_orderline_id < 1000000";
+                Cursor rs = db.querySQL(qry1, null);
+                if(rs.moveToFirst()){
+                    orderLine = orderLine + rs.getInt(0);
+                }
                 for (int i = 0; i < tam; i++) {
+
                     SoapObject dataRow = (SoapObject) dataResult.getProperty(i);
                     String col1[] = dataRow.getProperty(0).toString().split(delims);//m_product_id
-
-                    String qry1 = "select max(c_orderline_id) from c_orderline where c_orderline_id < 1000000";
-                    Cursor rs = db.querySQL(qry1, null);
-                    if(rs.moveToFirst()){
-                        orderLine = orderLine + rs.getInt(0);
-                    }
 
                     String qry = "Insert into priceListProducts values ("+provID+","+pLV+","+col1[1]+")";
                     String qryOL = "Insert into c_orderline values ("+orderLine+","+ordID+","+(i+1)+","+provID+","+col1[1]
@@ -647,6 +647,7 @@ public class ListaProveedorActivity extends ActionBarActivity {
 
                     db.executeSQL(qry);
                     db.executeSQL(qryOL);
+                    orderLine++;
                 }
             }
         } catch (Exception e){

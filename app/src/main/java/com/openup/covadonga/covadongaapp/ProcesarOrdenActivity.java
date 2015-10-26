@@ -46,6 +46,7 @@ import com.openup.covadonga.covadongaapp.util.Env;
 import com.openup.covadonga.covadongaapp.util.Order;
 
 
+
 public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBar.TabListener {
 
     /**
@@ -64,7 +65,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
     private ViewPager   mViewPager;
     private String[]    ordenes;
     private int         tam;
-
+    private int         entradaScan = 1;
+    private boolean     isInFront;
 
 
 
@@ -109,6 +111,13 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        isInFront = false;
     }
 
 
@@ -185,7 +194,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public class PlaceholderFragment extends Fragment { //static
         /**
          * The fragment argument representing the section number for this
          * fragment.
@@ -198,6 +207,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         private Button      finalizar;
         private int         docID;
         private int         ordId;
+
         private long        barCode;
         private String      lastInvoice = "";
 
@@ -260,6 +270,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
         public void onResume()
         {
             super.onResume();
+            isInFront = true;
 
             //Scan de ordenes
             intentService.putExtra(KEY_ACTION, "INIT");
@@ -274,12 +285,14 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            Env e = new Env();
             try {
                 super.onActivityResult(requestCode, resultCode, data);
 
                 if(requestCode == 1){
                     if (resultCode == RESULT_OK) {
                         lastInvoice = data.getStringExtra("key").toString();
+                        e.setEntradaScan(1);
                     }
                 }
 
@@ -290,13 +303,24 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
 
         }
 
+        public int getOrdId() {
+            return ordId;
+        }
+
+
         //Scan de ordenes
         public class BarcodeReceiver extends BroadcastReceiver {
+
             public void onReceive(Context ctx, Intent intent) {
-                if (intent.getAction().equals(ACTION_BARCODE_SERVICE_BROADCAST)) {
+                Env e = new Env();
+                Fragment fr = getSupportFragmentManager().findFragmentByTag("android:switcher:"
+                        + R.id.pager + ":" + mViewPager.getCurrentItem());
+
+                if(e.getEntradaScan() == 1 && isInFront){
                     strBarcode = intent.getExtras().getString(KEY_BARCODE_STR);
                     //strBarcode = "";
-                    insertUPCPDA();
+                    e.setEntradaScan(2);
+                    insertUPCPDA(((PlaceholderFragment) fr).getOrdId());
                 }
             }
         }
@@ -338,10 +362,10 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                         sr1.setCantFactura(rs.getFloat(3));
                         sr1.setCantRecibida(rs.getFloat(4));
                         results.add(sr1);
-                    }while(rs.moveToNext());
+                    } while (rs.moveToNext());
                 }
 
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.getMessage();
             } finally {
                 db.close();
@@ -356,8 +380,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
                     // TODO Auto-generated method stub
-                    Order ord = (Order)arg0.getItemAtPosition(position);
-                    startConfirmarCantidadesActivity(0, ord.getProdID(), 1);
+                    Order ord = (Order) arg0.getItemAtPosition(position);
+                    startConfirmarCantidadesActivity(0, ord.getProdID(), 1, ordId);
                 }
             });
 
@@ -414,7 +438,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             barCode = Long.valueOf(input.getText().toString());
-                            startConfirmarCantidadesActivity(barCode, 0, 0);
+                            startConfirmarCantidadesActivity(barCode, 0, 0, ordId);
                         }
                     });
             builder1.setNegativeButton("Cancel",
@@ -428,16 +452,16 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             alert11.show();
         }
 
-        public void insertUPCPDA(){
+        public void insertUPCPDA(int orderID){
             Long bc = Long.valueOf(strBarcode);
-            startConfirmarCantidadesActivity(bc, 0, 0);
+            startConfirmarCantidadesActivity(bc, 0, 0, orderID);
         }
 
 
-        public void startConfirmarCantidadesActivity(long barCode, int prdID, int type){
+        public void startConfirmarCantidadesActivity(long barCode, int prdID, int type, int orderID){
             Intent i = new Intent(getActivity().getBaseContext(), ConfirmarCantidadesActivity.class);
             Bundle b = new Bundle();
-            b.putInt("c_order_id", ordId);
+            b.putInt("c_order_id", orderID);
             b.putLong("barcode", barCode);
             b.putInt("m_product_id", prdID);
             b.putInt("type", type);

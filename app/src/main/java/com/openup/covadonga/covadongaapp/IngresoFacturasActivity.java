@@ -230,4 +230,38 @@ public class IngresoFacturasActivity extends ActionBarActivity {
         startActivity(i);
     }
 
+    private void invoicesCheck(){
+        int tam = spinOrders.getCount();
+        int tam2;
+        DBHelper db = null;
+        Cursor rsAux = null;
+        Cursor rs = null;
+        String docsId = "";
+
+        for (int i = 0; i < tam; i++){
+            if(i == 0){
+                docsId = "(" + spinOrders.getItemIdAtPosition(i);
+            }else if(i == (tam-1)){
+                docsId =  docsId + spinOrders.getItemIdAtPosition(i) + ")";
+            }else{
+                docsId = docsId + ",";
+            }
+        }
+
+        try{
+            db = new DBHelper(CustomApplication.getCustomAppContext());
+            db.openDB(0);
+            String qryAux = "select c_order_id from c_order where documentno in " + docsId;
+            rsAux = db.querySQL(qryAux, null);
+            tam2 = rsAux.getCount();
+
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
+
+
+    }
+
 }

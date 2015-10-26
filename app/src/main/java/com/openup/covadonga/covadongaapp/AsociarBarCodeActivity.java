@@ -198,8 +198,9 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
                             Toast.LENGTH_SHORT).show();
                     startConfirmarCantidadesActivity(Long.parseLong(barCode), 0, 0);
                 }else{
-                    Toast.makeText(getApplicationContext(), "Error al actulizar!",
-                            Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getApplicationContext(), "Error al actulizar!",
+//                            Toast.LENGTH_SHORT).show();
+                    errorPKUPC();
                 }
 
             }catch (Exception e) {
@@ -207,6 +208,26 @@ public class AsociarBarCodeActivity extends ActionBarActivity {
             } finally {
                 db.close();
             }
+    }
+
+    public void errorPKUPC(){
+        DBHelper db = null;
+        db = new DBHelper(this);
+        db.openDB(1);
+        try{
+            String qry = "select p.name from m_product p join uy_productupc" +
+                    " u on p.m_product_id = u.m_product_id where u.upc = "+barCode;
+            Cursor rs = db.querySQL(qry, null);
+            if(rs.moveToFirst()){
+                Toast.makeText(getApplicationContext(),
+                        "El CB esta asociado al producto: " + rs.getString(0),
+                        Toast.LENGTH_LONG).show();
+            }
+        }catch (Exception e) {
+            e.getMessage();
+        } finally {
+            db.close();
+        }
     }
 
 //    public void startConfirmarCantidadesActivity(){
