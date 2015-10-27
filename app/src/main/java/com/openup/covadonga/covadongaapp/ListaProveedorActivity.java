@@ -567,22 +567,35 @@ public class ListaProveedorActivity extends ActionBarActivity {
         int provID = getProvId();
         int priceListVersion = getPriceListVersion(provID);
         DBHelper db = null;
-        String qry1 = "select max(c_order_id), max(documentno) from c_order where c_order_id < 1000000";
+        String qry1 = "select count(c_order_id) from c_order where c_order_id < 1000000" +
+                        " and c_bpartner_id = " + provID;
+        String qry2 = "select max(c_order_id), max(documentno) from c_order where c_order_id < 1000000";
+
 
         try {
             db = new DBHelper(getApplicationContext());
             db.openDB(1);
+            int existe = 1;
             Cursor rs = db.querySQL(qry1, null);
             if(rs.moveToFirst()){
-                orderId = orderId + rs.getInt(0);
-                documentno = documentno + rs.getInt(1);
+                existe = rs.getInt(0);
             }
-
-            String qry = "Insert into c_order values ("+orderId+","+documentno+","+provID+",'N','',0)";
-            db.executeSQL(qry);
-
-            insertPLVProdsWS(priceListVersion, provID, orderId);
-            insertProds();
+            if(existe == 0){
+                Cursor rs2 = db.querySQL(qry2, null);
+                if(rs2.moveToFirst()){
+                    orderId = orderId + rs2.getInt(0);
+                    documentno = documentno + rs2.getInt(1);
+                    String qry = "Insert into c_order values ("+orderId+","+documentno+","+provID+",'N','',0)";
+                    db.executeSQL(qry);
+                    insertPLVProdsWS(priceListVersion, provID, orderId);
+                    insertProds();
+                }else {
+                    String qry = "Insert into c_order values ("+orderId+","+documentno+","+provID+",'N','',0)";
+                    db.executeSQL(qry);
+                    insertPLVProdsWS(priceListVersion, provID, orderId);
+                    insertProds();
+                }
+            }
 
         }catch (Exception e) {
             e.getMessage();

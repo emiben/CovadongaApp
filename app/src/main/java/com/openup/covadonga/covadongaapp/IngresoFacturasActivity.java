@@ -103,7 +103,9 @@ public class IngresoFacturasActivity extends ActionBarActivity {
         btnSig.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startProcesarOrdenActivity();
+                if(invoicesCheck() == 0){
+                    startProcesarOrdenActivity();
+                }
             }
         });
 
@@ -230,19 +232,20 @@ public class IngresoFacturasActivity extends ActionBarActivity {
         startActivity(i);
     }
 
-    private void invoicesCheck(){
+    private int invoicesCheck(){
         int tam = spinOrders.getCount();
-        int tam2;
+        int res = 0;
         DBHelper db = null;
-        Cursor rsAux = null;
         Cursor rs = null;
         String docsId = "";
 
         for (int i = 0; i < tam; i++){
-            if(i == 0){
-                docsId = "(" + spinOrders.getItemIdAtPosition(i);
+            if(tam == 1){
+                docsId = "(" + spinOrders.getItemAtPosition(i).toString() + ")";
+            }else if(i == 0){
+                docsId = "(" + spinOrders.getItemAtPosition(i).toString() + ",";
             }else if(i == (tam-1)){
-                docsId =  docsId + spinOrders.getItemIdAtPosition(i) + ")";
+                docsId =  docsId + spinOrders.getItemAtPosition(i).toString() + ")";
             }else{
                 docsId = docsId + ",";
             }
@@ -251,17 +254,26 @@ public class IngresoFacturasActivity extends ActionBarActivity {
         try{
             db = new DBHelper(CustomApplication.getCustomAppContext());
             db.openDB(0);
-            String qryAux = "select c_order_id from c_order where documentno in " + docsId;
-            rsAux = db.querySQL(qryAux, null);
-            tam2 = rsAux.getCount();
+            String qryAux = "select documentno from c_order where documentno in " + docsId
+                            + " and c_order_id not in"
+                            + " (select c_order_id from factura where c_order_id in"
+                            + " (select c_order_id from c_order where documentno in " + docsId + "))";
+            rs = db.querySQL(qryAux, null);
+            if(rs.moveToFirst()){
+                do{
+                    Toast.makeText(getApplicationContext(),
+                            "La orden No. "+rs.getString(0)+" no tiene facturas asociadas!!",
+                            Toast.LENGTH_SHORT).show();
+                }while (rs.moveToNext());
+                res = 1;
+            }
 
         }catch (Exception e) {
             e.getMessage();
         } finally {
             db.close();
         }
-
-
+        return res;
     }
 
 }
