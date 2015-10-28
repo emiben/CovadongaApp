@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -97,6 +98,25 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
 
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (Integer.parseInt(android.os.Build.VERSION.SDK) < 5
+                && keyCode == KeyEvent.KEYCODE_BACK
+                && event.getRepeatCount() == 0) {
+            onBackPressed();
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = getIntent();
+        intent.putExtra("key", facturas.getSelectedItem().toString());
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
     public void getViewElements(){
         facturado = (EditText) findViewById(R.id.etInvoiced);
         recibido = (EditText) findViewById(R.id.etReceived);
@@ -110,13 +130,22 @@ public class ConfirmarCantidadesActivity extends ActionBarActivity {
         ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                insertCant();
+                if(producto.getText().equals("")){
+                    Toast.makeText(getApplicationContext(),
+                            "No hay producto asociado. Cancele y vuelva a escanear!",
+                            Toast.LENGTH_SHORT).show();
+                }else{
+                    insertCant();
+                }
             }
         });
 
         cancell.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = getIntent();
+                intent.putExtra("key", facturas.getSelectedItem().toString());
+                setResult(RESULT_OK, intent);
                 finish();
             }
         });

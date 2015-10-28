@@ -154,10 +154,10 @@ public class SincronizeData {
             int i = 0;
             String qryOrdLine = "select l.c_orderline_id, l.c_order_id, l.m_product_id," +
                     " l.qtyinvoiced, l.qtydelivered, l.factura_id, f.fecha" +
-                    " from c_orderline l join factura f" +
+                    " from c_orderline l left join factura f" +
                     " on l.factura_id = f.factura_id" +
                     " where l.c_order_id = " + ordId +
-                    " and l.c_order_id not in" +
+                    " and l.c_orderline_id not in" +
                     " (select c_orderline_id from c_orderline where qtyordered = 0 and qtydelivered = 0 and qtyinvoiced = 0)";
             ordLineCurs = db.querySQL(qryOrdLine, null);
             orderLines = new OrderLine[ordLineCurs.getCount()];
@@ -189,12 +189,14 @@ public class SincronizeData {
         int tam = orders.length;
         int ordId;
         String qryProdId;
+        String qryDelPLs;
 
         for(int i=0; i<tam; i++){
             DBHelper db = null;
             String[] split = orders[i].split("-");
             ordId = Integer.valueOf(split[2]);
             qryProdId = "select distinct m_product_id from c_orderline where c_order_id = " + ordId;
+            qryDelPLs = "delete from priceListProducts where c_bpartner_id not in (Select c_bpartner_id from c_order)";
 
             try{
                 db = new DBHelper(CustomApplication.getCustomAppContext());
@@ -216,7 +218,7 @@ public class SincronizeData {
                 int resuFac = db.deleteSQL("factura", whereOrd, null);
                 int resuOL = db.deleteSQL("c_orderline", whereOrd, null);
                 int resuOrd = db.deleteSQL("c_order", whereOrd, null);
-
+                db.executeSQL(qryDelPLs);
 
             }catch (Exception e) {
                 e.getMessage();
@@ -225,6 +227,7 @@ public class SincronizeData {
             }
         }
     }
+
 
     public void insertErrors(String[] errors){
         int tam = errors.length;

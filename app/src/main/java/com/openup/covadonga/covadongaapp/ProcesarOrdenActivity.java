@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -44,7 +45,7 @@ import com.openup.covadonga.covadongaapp.util.DBHelper;
 import com.openup.covadonga.covadongaapp.util.CustomListAdapter;
 import com.openup.covadonga.covadongaapp.util.Env;
 import com.openup.covadonga.covadongaapp.util.Order;
-
+import com.openup.covadonga.covadongaapp.util.SincronizeData;
 
 
 public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBar.TabListener {
@@ -66,7 +67,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
     private String[]    ordenes;
     private int         tam;
     private int         entradaScan = 1;
-    private boolean     isInFront;
+    //private boolean     isInFront;
 
 
 
@@ -114,11 +115,11 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
     }
 
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        isInFront = false;
-    }
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        isInFront = false;
+//    }
 
 
     @Override
@@ -210,6 +211,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
 
         private long        barCode;
         private String      lastInvoice = "";
+        private boolean     isInFront;
+        private ProgressDialog  pDialog;
 
         //Scan de ordenes
         //send by BarcodeService
@@ -264,6 +267,12 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             loadProducts();
 
             return rootView;
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            isInFront = false;
         }
 
         @Override
@@ -414,6 +423,7 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                     builder.setPositiveButton(R.string.txtOK, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             finalizeOrder();
+                            SyncOrd();
                         }
                     });
                     builder.setNegativeButton(R.string.txtCancell, new DialogInterface.OnClickListener() {
@@ -425,6 +435,41 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                     dialog.show();
                 }
             });
+        }
+
+        public void SyncOrd(){
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Sincronizar Orden?");
+            // Add the buttons
+            builder.setPositiveButton(R.string.txtOK, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    sincronizarOrders();
+                    getActivity().finish();
+                }
+            });
+            builder.setNegativeButton(R.string.txtCancell, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User cancelled the dialog
+                    getActivity().finish();
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+
+        public void sincronizarOrders(){
+            pDialog = ProgressDialog.show(getActivity(), null, "Enviando datos...", true);
+            final SincronizeData sd = new SincronizeData();
+            new Thread() {
+                public void run() {
+                    try {
+                        sd.sendOrders();
+                    } catch (Exception e) {
+                        e.getMessage();
+                    }
+                    pDialog.dismiss();
+                }
+            }.start();
         }
 
         public void insertUPC(){
@@ -501,7 +546,6 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                 if(res > 0){
                     Toast.makeText(getActivity().getBaseContext(), "Orden Finalizada!",
                             Toast.LENGTH_SHORT).show();
-                    getActivity().finish();
                 }else{
                     Toast.makeText(getActivity().getBaseContext(), "Error al finalizar orden!",
                             Toast.LENGTH_SHORT).show();
