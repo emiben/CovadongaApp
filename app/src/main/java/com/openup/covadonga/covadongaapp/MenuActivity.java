@@ -1,5 +1,6 @@
 package com.openup.covadonga.covadongaapp;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -29,12 +30,14 @@ public class MenuActivity extends ActionBarActivity {
     private Button          btnSincOrders;
     private Button          btnReport;
     private ProgressDialog  pDialog;
+    private Activity        mYourActivityContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
+        mYourActivityContext = this;
         getViewElements();
         setActions();
     }
@@ -123,6 +126,13 @@ public class MenuActivity extends ActionBarActivity {
 
     }
 
+    public void printUPCErrors(String[] resu){
+        String[] print = resu[0].split(";");
+        for(int i = 0; i < print.length; i++){
+            Toast.makeText(this, print[i], Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void startListaClienteActivity(int recType) {
         Bundle bundle = new Bundle();
         bundle.putInt("recType", recType);
@@ -154,17 +164,25 @@ public class MenuActivity extends ActionBarActivity {
 
     public void sincronizarUPC(){
         pDialog = ProgressDialog.show(this, null, "Enviando datos...", true);
+        final String[] resp = {""};
         final SincronizeData sd = new SincronizeData();
         new Thread() {
             public void run() {
                 try {
-                    sd.sendUPC();
+                    resp[0] = sd.sendUPC();
                 } catch (Exception e) {
                     e.getMessage();
-                    Toast.makeText(getApplicationContext(),
-                            "Error! Por favor intente nuevamente. Desc: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
                 pDialog.dismiss();
+                ((Activity) mYourActivityContext).runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if(!resp[0].equals("")){
+                            printUPCErrors(resp);
+                        }
+                    }
+                });
             }
         }.start();
     }

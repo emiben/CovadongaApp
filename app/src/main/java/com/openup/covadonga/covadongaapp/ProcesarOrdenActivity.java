@@ -444,17 +444,33 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
             builder.setPositiveButton(R.string.txtOK, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     sincronizarOrders();
-                    getActivity().finish();
                 }
             });
             builder.setNegativeButton(R.string.txtCancell, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     // User cancelled the dialog
                     getActivity().finish();
+                    restartActivity();
                 }
             });
             AlertDialog dialog = builder.create();
             dialog.show();
+        }
+
+        public void restartActivity(){
+            if(ordenes.length > 1){
+                String strOrdenes = "";
+                for(int i = 0; i < ordenes.length; i++){
+                    if(!ordenes[i].equals(String.valueOf(docID))){
+                        strOrdenes = strOrdenes + ordenes[i] + ";";
+                    }
+                }
+                Intent i = new Intent(getActivity(), ProcesarOrdenActivity.class);
+                Bundle b = new Bundle();
+                b.putString("Ordenes", strOrdenes);
+                i.putExtras(b);
+                startActivity(i);
+            }
         }
 
         public void sincronizarOrders(){
@@ -464,6 +480,8 @@ public class ProcesarOrdenActivity extends ActionBarActivity implements ActionBa
                 public void run() {
                     try {
                         sd.sendOrders();
+                        getActivity().finish();
+                        restartActivity();
                     } catch (Exception e) {
                         e.getMessage();
                     }

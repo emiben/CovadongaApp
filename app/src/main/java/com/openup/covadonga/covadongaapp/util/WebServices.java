@@ -479,7 +479,7 @@ public class WebServices {
 
             if ((SoapObject) envelope.getResponse() != null) {
                 response = (SoapObject) envelope.getResponse();
-                mensajeWS = "OK";
+                mensajeWS = response.getProperty(0).toString();
             }
             transporte.reset();
         } catch (EOFException e1){

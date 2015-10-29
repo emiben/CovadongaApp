@@ -13,7 +13,8 @@ public class SincronizeData {
 
     private WebServices ws;
 
-    public void sendUPC(){
+    public String sendUPC(){
+        String res = "";
         ws = new WebServices();
         String[] columYVal = new String[6];
         DBHelper db = null;
@@ -33,26 +34,36 @@ public class SincronizeData {
                     columYVal[i++] = String.valueOf(rs.getInt(1)); //val
                     columYVal[i++] = "IsMobile"; //colum
                     columYVal[i++] = "Y"; //val
-                    ws.webServiceIns("CreateProductUPC", "UY_ProductUpc", columYVal);///cambiar
-                    if(ws.getMessage() == "EOFException"){
-                        ws.webServiceIns("CreateProductUPC", "UY_ProductUpc", columYVal);///cambiar
-                    }
-                    if(ws.getResponse() != null) {
-                        String res = (String) ws.getResponse().getAttribute(0);
-                        if (Integer.valueOf(res) > 0) {
+//                    ws.webServiceIns("CreateProductUPC", "UY_ProductUpc", columYVal);
+//                    if(ws.getMessage() == "EOFException"){
+//                        ws.webServiceIns("CreateProductUPC", "UY_ProductUpc", columYVal);
+//                    }else
+
+                    do{
+                        ws.webServiceIns("CreateProductUPC", "UY_ProductUpc", columYVal);
+                    }while (ws.getMessage() == "EOFException");
+
+                    if (ws.getMessage().toString().toLowerCase().contains("error")){
+                        res = res + "El UPC " +
+                                ws.getMessage().toString().substring(132, 142) +
+                                " no se pudo sincronizar!;";
+                        int resu = db.deleteSQL("uy_productupc","uy_productupc_id = "+rs.getInt(0), null);
+                    }else if(ws.getResponse() != null) {
+                        String resultado = (String) ws.getResponse().getAttribute(0);
+
+                        if (Integer.valueOf(resultado) > 0) {
                             int resu = db.deleteSQL("uy_productupc","uy_productupc_id = "+rs.getInt(0), null);
-                        } else {
-                            Toast.makeText(CustomApplication.getCustomAppContext(), "El UPC " + rs.getInt(0) +
-                                    " no se pudo sincronizar!", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }while(rs.moveToNext());
+
             }
         }catch (Exception e) {
             e.getMessage();
         } finally {
             db.close();
         }
+        return res;
     }
 
     public void sendOrders(){
